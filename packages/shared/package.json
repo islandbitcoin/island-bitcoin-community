@@ -1,0 +1,17 @@
+{
+  "name": "@island-bitcoin/shared",
+  "version": "0.1.0",
+  "description": "Shared Zod schemas and types for Island Bitcoin community apps",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
