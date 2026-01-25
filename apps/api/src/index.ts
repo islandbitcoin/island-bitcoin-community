@@ -3,6 +3,7 @@ import { serve } from '@hono/node-server';
 import { leaderboardRoute } from './routes/leaderboard';
 import { configRoute } from './routes/config';
 import { walletRoute } from './routes/wallet';
+import { triviaRoute } from './routes/trivia';
 
 const app = new Hono();
 
@@ -13,6 +14,7 @@ app.get('/health', (c) => {
 app.route('/api/leaderboard', leaderboardRoute);
 app.route('/api/config', configRoute);
 app.route('/api/wallet', walletRoute);
+app.route('/api/trivia', triviaRoute);
 
 const port = 3001;
 
