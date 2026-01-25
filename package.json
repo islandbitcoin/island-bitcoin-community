@@ -1,0 +1,19 @@
+{
+  "name": "island-bitcoin-community",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Island Bitcoin community webapp monorepo",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
