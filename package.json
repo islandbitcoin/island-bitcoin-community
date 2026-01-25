@@ -10,10 +10,16 @@
     "lint": "turbo run lint"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^9.6.0",
+    "drizzle-kit": "^0.31.8",
     "turbo": "^2.0.0"
   },
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.1"
   }
 }
