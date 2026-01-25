@@ -1,0 +1,21 @@
+{
+  "name": "@island-bitcoin/nostr",
+  "version": "0.1.0",
+  "description": "Nostr utilities and Blossom auth for Island Bitcoin community apps",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest --run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@nostrify/nostrify": "^0.49.2",
+    "@nostrify/react": "^0.2.24",
+    "nostr-tools": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vitest": "^1.0.0"
+  }
+}
