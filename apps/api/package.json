@@ -1,0 +1,26 @@
+{
+  "name": "@island-bitcoin/api",
+  "version": "0.1.0",
+  "description": "Hono API server for Island Bitcoin community webapp",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "hono": "^4.6.0",
+    "@hono/node-server": "^1.13.0",
+    "@hono/zod-openapi": "^0.16.0",
+    "@hono/zod-validator": "^0.2.2",
+    "drizzle-orm": "^0.30.10",
+    "better-sqlite3": "^9.2.2",
+    "zod": "^3.25.76",
+    "@island-bitcoin/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "tsx": "^4.7.0"
+  }
+}
