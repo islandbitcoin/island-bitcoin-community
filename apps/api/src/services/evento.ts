@@ -1,4 +1,4 @@
-import { createNostrClient } from '@island-bitcoin/nostr';
+import { WebSocket } from 'ws';
 
 export interface CalendarEvent {
   id: string;
@@ -10,27 +10,12 @@ export interface CalendarEvent {
   pubkey: string;
 }
 
-// Expanded relay list for better NIP-52 calendar event coverage
-// Includes relays used by Flockstr (calendar app) and other high-reliability relays
+// Reliable relays for NIP-52 calendar event queries
 const DEFAULT_RELAYS = [
-  // Primary - Flash's relay (Island Bitcoin events)
-  'wss://relay.flashapp.me',
-  
-  // Tier 1: Most reliable & fast (from Flockstr + NDK)
   'wss://relay.damus.io',
-  'wss://nos.lol',
   'wss://relay.primal.net',
-  
-  // Tier 2: Good redundancy & search capable
+  'wss://nos.lol',
   'wss://relay.nostr.band',
-  'wss://nostr.wine',
-  'wss://relay.snort.social',
-  
-  // Tier 3: Additional coverage (from Flockstr)
-  'wss://nostr.mom',
-  'wss://purplepag.es',
-  'wss://offchain.pub',
-  'wss://nostr.oxtr.dev',
 ];
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
@@ -97,34 +82,78 @@ function parseNip52Event(event: { kind: number; tags: string[][]; content: strin
 }
 
 async function fetchNip52Events(relays: string[] = DEFAULT_RELAYS): Promise<CalendarEvent[]> {
-  const client = createNostrClient(relays);
   const events: CalendarEvent[] = [];
+  const seenIds = new Set<string>();
+
+  console.log('[fetchNip52Events] Starting - relays:', relays.length);
+  const startTime = Date.now();
+
+  const queryRelay = (url: string): Promise<CalendarEvent[]> => {
+    return new Promise((resolve) => {
+      const relayEvents: CalendarEvent[] = [];
+      const ws = new WebSocket(url);
+      const timeout = setTimeout(() => {
+        ws.close();
+        resolve(relayEvents);
+      }, 10000);
+
+      ws.on('open', () => {
+        console.log('[fetchNip52Events] Connected to', url);
+        ws.send(JSON.stringify(['REQ', 'nip52', { kinds: [NIP52_KIND], limit: 100 }]));
+      });
+
+      ws.on('message', (data: Buffer) => {
+        try {
+          const msg = JSON.parse(data.toString());
+          if (msg[0] === 'EVENT' && msg[2]) {
+            const parsed = parseNip52Event(msg[2]);
+            if (parsed) {
+              relayEvents.push(parsed);
+              console.log('[fetchNip52Events] Event from', url, ':', parsed.title);
+            }
+          }
+          if (msg[0] === 'EOSE') {
+            console.log('[fetchNip52Events] EOSE from', url);
+            clearTimeout(timeout);
+            ws.close();
+            resolve(relayEvents);
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+      });
+
+      ws.on('error', (err) => {
+        console.log('[fetchNip52Events] Error from', url, ':', err.message);
+        clearTimeout(timeout);
+        resolve(relayEvents);
+      });
+
+      ws.on('close', () => {
+        clearTimeout(timeout);
+        resolve(relayEvents);
+      });
+    });
+  };
 
   try {
-    const filter = { kinds: [NIP52_KIND], limit: 100 };
-    
-     const controller = new AbortController();
-     const timeout = setTimeout(() => controller.abort(), 30000);
-
-    try {
-      for await (const msg of client.req([filter], { signal: controller.signal })) {
-        if (msg[0] === 'EVENT') {
-          const parsed = parseNip52Event(msg[2] as { kind: number; tags: string[][]; content: string; pubkey: string });
-          if (parsed) {
-            events.push(parsed);
+    const relaysToQuery = relays.slice(0, 3);
+    const results = await Promise.allSettled(relaysToQuery.map(queryRelay));
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        for (const event of result.value) {
+          if (!seenIds.has(event.id)) {
+            seenIds.add(event.id);
+            events.push(event);
           }
         }
-        if (msg[0] === 'EOSE') {
-          break;
-        }
       }
-    } finally {
-      clearTimeout(timeout);
     }
   } catch (error) {
-    console.error('NIP-52 fetch error:', error);
+    console.error('[fetchNip52Events] Error:', error);
   }
 
+  console.log('[fetchNip52Events] Completed in', Date.now() - startTime, 'ms. Total events:', events.length);
   return events;
 }
 
