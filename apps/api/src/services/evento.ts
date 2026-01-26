@@ -10,11 +10,27 @@ export interface CalendarEvent {
   pubkey: string;
 }
 
+// Expanded relay list for better NIP-52 calendar event coverage
+// Includes relays used by Flockstr (calendar app) and other high-reliability relays
 const DEFAULT_RELAYS = [
+  // Primary - Flash's relay (Island Bitcoin events)
   'wss://relay.flashapp.me',
+  
+  // Tier 1: Most reliable & fast (from Flockstr + NDK)
   'wss://relay.damus.io',
-  'wss://relay.nostr.band',
   'wss://nos.lol',
+  'wss://relay.primal.net',
+  
+  // Tier 2: Good redundancy & search capable
+  'wss://relay.nostr.band',
+  'wss://nostr.wine',
+  'wss://relay.snort.social',
+  
+  // Tier 3: Additional coverage (from Flockstr)
+  'wss://nostr.mom',
+  'wss://purplepag.es',
+  'wss://offchain.pub',
+  'wss://nostr.oxtr.dev',
 ];
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
