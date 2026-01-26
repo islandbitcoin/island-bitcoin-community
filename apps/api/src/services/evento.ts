@@ -18,6 +18,8 @@ const DEFAULT_RELAYS = [
   'wss://relay.nostr.band',
 ];
 
+const ISLAND_BITCOIN_PUBKEY = '96e31c34591d5d35eb3d64ec84b666cce6f35c5172a43c2c7e3187ab5b5ae8ac';
+
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const NIP52_KIND = 31923;
 
@@ -97,10 +99,10 @@ async function fetchNip52Events(relays: string[] = DEFAULT_RELAYS): Promise<Cale
         resolve(relayEvents);
       }, 10000);
 
-      ws.on('open', () => {
-        console.log('[fetchNip52Events] Connected to', url);
-        ws.send(JSON.stringify(['REQ', 'nip52', { kinds: [NIP52_KIND], limit: 100 }]));
-      });
+       ws.on('open', () => {
+         console.log('[fetchNip52Events] Connected to', url);
+         ws.send(JSON.stringify(['REQ', 'nip52', { kinds: [NIP52_KIND], authors: [ISLAND_BITCOIN_PUBKEY], limit: 100 }]));
+       });
 
       ws.on('message', (data: Buffer) => {
         try {
