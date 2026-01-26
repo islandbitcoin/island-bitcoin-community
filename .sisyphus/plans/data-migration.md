@@ -295,7 +295,7 @@ Each task includes specific verification commands and expected outputs.
 
 ---
 
-- [ ] 6. Configure Subdomain and Reverse Proxy
+- [x] 6. Configure Subdomain and Reverse Proxy
 
   **What to do**:
   - User configures DNS: `beta.community.islandbitcoin.com` → 206.189.139.60
@@ -332,7 +332,7 @@ Each task includes specific verification commands and expected outputs.
 
 ---
 
-- [ ] 7. Final Verification with Playwright
+- [x] 7. Final Verification with Playwright
 
   **What to do**:
   - Run comprehensive Playwright test on https://beta.community.islandbitcoin.com
