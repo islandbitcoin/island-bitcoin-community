@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Events from "./pages/Events";
+import Gallery from "./pages/Gallery";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
 import AdminSetup from "./pages/AdminSetup";
@@ -17,6 +18,7 @@ export function AppRouter() {
         <Route path="/" element={<Index />} />
         <Route path="/about" element={<About />} />
         <Route path="/events" element={<Events />} />
+        <Route path="/gallery" element={<Gallery />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin-setup" element={<AdminSetup />} />
