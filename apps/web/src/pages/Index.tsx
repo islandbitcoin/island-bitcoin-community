@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, Image, Menu, MapPin } from "lucide-react";
+import { Calendar, Image, Menu, MapPin, X } from "lucide-react";
 import { useEvents } from "@/hooks/useEvents";
+import { useGallery } from "@/hooks/useGallery";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/layout/Layout";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -18,6 +19,9 @@ export default function Index() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { events: upcomingEvents, isLoading: eventsLoading } = useEvents("upcoming");
   const previewEvents = upcomingEvents.slice(0, 3);
+  const { images, isLoading: galleryLoading } = useGallery();
+  const previewImages = images.slice(0, 6);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
     <Layout hideHeader hideFooter>
@@ -166,6 +170,38 @@ export default function Index() {
               </p>
             </div>
 
+            {galleryLoading && (
+              <div className="flex justify-center py-8">
+                <Image className="h-8 w-8 text-primary/50 animate-pulse" />
+              </div>
+            )}
+
+            {!galleryLoading && previewImages.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8 max-w-7xl mx-auto px-4">
+                {previewImages.map((image, index) => (
+                  <div
+                    key={image.url}
+                    className="aspect-square relative overflow-hidden rounded-lg bg-muted cursor-pointer group"
+                    onClick={() => setSelectedImage(image.url)}
+                  >
+                    <img
+                      src={image.url}
+                      alt={`Community photo ${index + 1}`}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!galleryLoading && previewImages.length === 0 && (
+              <p className="text-center text-muted-foreground mb-8">
+                No gallery images available yet.
+              </p>
+            )}
+
             <div className="text-center mt-8">
               <Link to="/gallery">
                 <Button
@@ -267,6 +303,26 @@ export default function Index() {
         </footer>
 
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
+        {selectedImage && (
+          <div
+            className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50"
+            onClick={() => setSelectedImage(null)}
+          >
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 text-white/80 hover:text-white"
+            >
+              <X className="h-8 w-8" />
+            </button>
+            <img
+              src={selectedImage}
+              alt="Full size"
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
       </div>
     </Layout>
   );
