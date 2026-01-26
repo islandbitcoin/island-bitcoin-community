@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, Image, Menu } from "lucide-react";
+import { Calendar, Image, Menu, MapPin } from "lucide-react";
+import { useEvents } from "@/hooks/useEvents";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/layout/Layout";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -15,6 +16,8 @@ const SITE_DESCRIPTION =
 
 export default function Index() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { events: upcomingEvents, isLoading: eventsLoading } = useEvents("upcoming");
+  const previewEvents = upcomingEvents.slice(0, 3);
 
   return (
     <Layout hideHeader hideFooter>
@@ -96,6 +99,48 @@ export default function Index() {
                 Bitcoin meetups, workshops, and celebrations across the islands
               </p>
             </div>
+
+            {eventsLoading && (
+              <div className="flex justify-center py-8">
+                <Calendar className="h-8 w-8 text-primary/50 animate-pulse" />
+              </div>
+            )}
+
+            {!eventsLoading && previewEvents.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-6xl mx-auto">
+                {previewEvents.map((item) => {
+                  const event = item.event.event;
+                  const location = event.location;
+                  const locationString = location?.address
+                    ? `${location.address.city}, ${location.address.country}`
+                    : location?.name || 'Caribbean';
+                  
+                  return (
+                    <div key={event.id} className="bg-card border border-border rounded-lg p-6 hover:shadow-lg hover:border-primary/30 transition-all">
+                      <h3 className="text-lg font-semibold text-primary mb-2 line-clamp-2">
+                        {event.basic_info.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(event.datetime.start).toLocaleDateString('en-US', {
+                          month: 'long', day: 'numeric', year: 'numeric'
+                        })}
+                      </p>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {locationString}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {!eventsLoading && previewEvents.length === 0 && (
+              <p className="text-center text-muted-foreground mb-8">
+                No upcoming events at the moment. Check back soon!
+              </p>
+            )}
 
             <div className="text-center mt-8 space-y-4">
               <Link to="/events">
