@@ -1,5 +1,3 @@
-import blossomUrls from '../../../../scripts/blossom-urls.json';
-
 export interface BlobDescriptor {
   url: string;
   sha256: string;
@@ -15,10 +13,97 @@ interface BlossomUrlEntry {
   sha256: string;
 }
 
+const BLOSSOM_URLS: BlossomUrlEntry[] = [
+  {
+    "filename": "Bitcoin Pizza Day Event.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Bitcoin%20Pizza%20Day%20Event.jpeg",
+    "blossomUrl": "https://i.nostr.build/IVrrVyNmA5S2VEpu.jpg",
+    "sha256": "d88b6c18b4480d1339779b681e90d0253a72e74310316a07f65a769ce1197c93"
+  },
+  {
+    "filename": "Bitcoin Pizza Day Flyer.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Bitcoin%20Pizza%20Day%20Flyer.jpeg",
+    "blossomUrl": "https://i.nostr.build/Fwa8AUqscwI2ik3g.jpg",
+    "sha256": "5dbca7fcd2387f328d39a872a4c04874ab114ebd2c6d780e03f0c08c36ed0206"
+  },
+  {
+    "filename": "Bitcoin Pizza Day Raffle Winner.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Bitcoin%20Pizza%20Day%20Raffle%20Winner.jpeg",
+    "blossomUrl": "https://i.nostr.build/FjXqJ4ZcXA1isE7j.jpg",
+    "sha256": "f71a64211e5da134afc0a25c077a909fc3d579c430ff5971e71c713ca1a89c45"
+  },
+  {
+    "filename": "Bitcoin Pizza Day Shirt.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Bitcoin%20Pizza%20Day%20Shirt.jpeg",
+    "blossomUrl": "https://i.nostr.build/XNbkiRXgb4RBQORI.jpg",
+    "sha256": "a10c51dd560f2e8f9415dfe2a1c5549e1f6d82d92bd707ee087c9c372204ae17"
+  },
+  {
+    "filename": "Bitcoin Pizza Day Webapp 2.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Bitcoin%20Pizza%20Day%20Webapp%202.jpeg",
+    "blossomUrl": "https://i.nostr.build/gJztF5zM25d1D6w7.jpg",
+    "sha256": "88cfba07a4766697d9de6e5634f5ce71f508ad84ed2f8cb07cd99530ae8a14ba"
+  },
+  {
+    "filename": "Bitcoin Pizza Day Webapp.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Bitcoin%20Pizza%20Day%20Webapp.jpeg",
+    "blossomUrl": "https://i.nostr.build/A3vYESRir983vrCu.jpg",
+    "sha256": "6640d058727d90866e2f31b3e171533a6a99c9f8eb002c35b30e9b829e2d0340"
+  },
+  {
+    "filename": "Community Members.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Community%20Members.jpeg",
+    "blossomUrl": "https://i.nostr.build/tTq8MhvYsDyaswzU.jpg",
+    "sha256": "ed8be97cd1450b2c65a54a1ab60348d5cac5908ac01ce8e5ab2b7e95d9b6a98c"
+  },
+  {
+    "filename": "DJ Rio and Mortimer.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/DJ%20Rio%20and%20Mortimer.jpeg",
+    "blossomUrl": "https://i.nostr.build/PV4e4Oy8ypJiN8nN.jpg",
+    "sha256": "994b4f1916b12279f08f01c10f5a515772e98ba9f36c2fa9796af1eed9b14144"
+  },
+  {
+    "filename": "DJ Rio at Bitcoin Pizza Day.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/DJ%20Rio%20at%20Bitcoin%20Pizza%20Day.jpeg",
+    "blossomUrl": "https://i.nostr.build/LUMzXjPdYHjuplp1.jpg",
+    "sha256": "79004d40d87c31db6c4ac558605a11f9079113b9fbfe146be1e01256965e34d6"
+  },
+  {
+    "filename": "Island Bitcoin Logo.jpg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Island%20Bitcoin%20Logo.jpg",
+    "blossomUrl": "https://i.nostr.build/D2q8D4u4r0kBmbE1.jpg",
+    "sha256": "6bcb5dd2aef6171a5f693aeb375d3f6a4a0b1950516c5ed56a7239f37b8d0c40"
+  },
+  {
+    "filename": "Island Bitcoin Meetup.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Island%20Bitcoin%20Meetup.jpeg",
+    "blossomUrl": "https://i.nostr.build/xDZ4kCR0wFx2NRkA.jpg",
+    "sha256": "38059c9ef8b2c4965548100af9b8551666f009170dad1897a12209bf95f52229"
+  },
+  {
+    "filename": "Jamaica on Blades.mp4",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Jamaica%20on%20Blades.mp4",
+    "blossomUrl": "https://v.nostr.build/yfhFwscxcY4DmJko.mp4",
+    "sha256": "f627c975f67e329c0dbea683886fd81ef8296bef264a2dd59666b774aa26cef9"
+  },
+  {
+    "filename": "Pizza Day Event Shirt.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Pizza%20Day%20Event%20Shirt.jpeg",
+    "blossomUrl": "https://i.nostr.build/tjktuGIeW2liTUuG.jpg",
+    "sha256": "36a43e379152fc16a4ece450796b1da686c12fc664e556c1455f9b0159703104"
+  },
+  {
+    "filename": "Pizza Please.mp4",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Pizza%20Please.mp4",
+    "blossomUrl": "https://v.nostr.build/Er0VNbCVKDoQTzaU.mp4",
+    "sha256": "63879a485cb66f2889501efffd73b6f6a6b716a85e968843d62821356060b456"
+  }
+];
+
 export async function listBlobs(): Promise<BlobDescriptor[]> {
   try {
     // Transform the hardcoded mapping to BlobDescriptor format
-    const blobs: BlobDescriptor[] = (blossomUrls as BlossomUrlEntry[]).map((entry) => ({
+    const blobs: BlobDescriptor[] = BLOSSOM_URLS.map((entry) => ({
       url: entry.blossomUrl,
       sha256: entry.sha256,
       size: 0, // Not available from mapping
