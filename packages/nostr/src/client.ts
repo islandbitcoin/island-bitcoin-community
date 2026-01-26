@@ -1,4 +1,10 @@
+import { WebSocket } from 'ws';
 import { NPool, NRelay1 } from "@nostrify/nostrify";
+
+// Polyfill WebSocket for Node.js environment
+if (typeof globalThis.WebSocket === 'undefined') {
+  (globalThis as any).WebSocket = WebSocket;
+}
 
 /**
  * Creates a Nostr client connected to specified relays
