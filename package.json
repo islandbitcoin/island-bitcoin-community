@@ -2,6 +2,7 @@
   "name": "island-bitcoin-community",
   "version": "0.0.1",
   "private": true,
+  "packageManager": "pnpm@10.28.1",
   "description": "Island Bitcoin community webapp monorepo",
   "scripts": {
     "build": "turbo run build",

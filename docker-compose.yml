@@ -1,0 +1,54 @@
+services:
+  api:
+    build:
+      context: .
+      target: api
+    container_name: island-bitcoin-api
+    ports:
+      - "${API_PORT:-3001}:3001"
+    volumes:
+      - sqlite-data:/data
+    environment:
+      - NODE_ENV=production
+      - DATABASE_PATH=/data/island-bitcoin.db
+      - PORT=3001
+      - ORY_TOKEN=${ORY_TOKEN:-}
+      - AUTO_APPROVE=${AUTO_APPROVE:-false}
+      - AUTO_APPROVE_THRESHOLD=${AUTO_APPROVE_THRESHOLD:-1000}
+    restart: unless-stopped
+    networks:
+      - island-bitcoin-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  web:
+    build:
+      context: .
+      target: web
+    container_name: island-bitcoin-web
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - island-bitcoin-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+networks:
+  island-bitcoin-network:
+    driver: bridge
+
+volumes:
+  sqlite-data:
+    driver: local
