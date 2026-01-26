@@ -5,6 +5,7 @@ import { configRoute } from './routes/config';
 import { walletRoute } from './routes/wallet';
 import { triviaRoute } from './routes/trivia';
 import { stackerRoute } from './routes/stacker';
+import { achievementsRoute } from './routes/achievements';
 
 const app = new Hono();
 
@@ -17,6 +18,7 @@ app.route('/api/config', configRoute);
 app.route('/api/wallet', walletRoute);
 app.route('/api/trivia', triviaRoute);
 app.route('/api/stacker', stackerRoute);
+app.route('/api/achievements', achievementsRoute);
 
 const port = 3001;
 
