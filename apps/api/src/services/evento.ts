@@ -11,6 +11,7 @@ export interface CalendarEvent {
 }
 
 const DEFAULT_RELAYS = [
+  'wss://relay.flashapp.me',
   'wss://relay.damus.io',
   'wss://relay.nostr.band',
   'wss://nos.lol',
