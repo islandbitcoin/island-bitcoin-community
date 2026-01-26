@@ -26,32 +26,36 @@ export default function Index() {
   return (
     <Layout hideHeader hideFooter>
       <div className="min-h-screen bg-gradient-to-b from-muted via-background to-muted/30">
-        <header
-          role="banner"
-          className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border"
-        >
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <Link to="/" className="flex items-center gap-2">
-                <img
-                  src="https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/4cfeb962c33fff5e6f5561c37ddca3c469c25793/gallery/Island%20Bitcoin%20Logo.jpg"
-                  alt="Island Bitcoin Logo"
-                  className="h-16 w-16 rounded-full"
-                />
-              </Link>
-              <div className="flex items-center gap-2 sm:gap-4">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="border-primary text-primary hover:bg-primary/10"
-                  onClick={() => setIsSidebarOpen(true)}
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </header>
+         <header
+           role="banner"
+           className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border"
+         >
+           <div className="container mx-auto px-4 py-3">
+             <div className="flex items-center justify-between">
+               <Link to="/" className="flex items-center gap-2">
+                 <span className="text-xl font-bold text-primary">Island Bitcoin</span>
+               </Link>
+               
+               <nav className="hidden md:flex items-center gap-6">
+                 <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                   Events
+                 </Link>
+                 <Link to="/gallery" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                   Gallery
+                 </Link>
+               </nav>
+               
+               <Button
+                 variant="outline"
+                 size="icon"
+                 className="border-primary text-primary hover:bg-primary/10"
+                 onClick={() => setIsSidebarOpen(true)}
+               >
+                 <Menu className="h-5 w-5" />
+               </Button>
+             </div>
+           </div>
+         </header>
 
         <section className="relative overflow-hidden py-16 sm:py-20 lg:py-32">
           <div className="absolute inset-0 -z-10">
