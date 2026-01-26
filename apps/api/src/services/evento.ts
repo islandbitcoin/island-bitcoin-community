@@ -87,8 +87,8 @@ async function fetchNip52Events(relays: string[] = DEFAULT_RELAYS): Promise<Cale
   try {
     const filter = { kinds: [NIP52_KIND], limit: 100 };
     
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+     const controller = new AbortController();
+     const timeout = setTimeout(() => controller.abort(), 30000);
 
     try {
       for await (const msg of client.req([filter], { signal: controller.signal })) {
