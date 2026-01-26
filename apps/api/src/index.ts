@@ -7,6 +7,7 @@ import { triviaRoute } from './routes/trivia';
 import { stackerRoute } from './routes/stacker';
 import { achievementsRoute } from './routes/achievements';
 import { galleryRoute } from './routes/gallery';
+import { payoutsRoute } from './routes/admin/payouts';
 
 const app = new Hono();
 
@@ -21,6 +22,7 @@ app.route('/api/trivia', triviaRoute);
 app.route('/api/stacker', stackerRoute);
 app.route('/api/achievements', achievementsRoute);
 app.route('/api/gallery', galleryRoute);
+app.route('/api/admin/payouts', payoutsRoute);
 
 const port = 3001;
 
