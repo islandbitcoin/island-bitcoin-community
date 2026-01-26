@@ -31,6 +31,9 @@ export interface AdminConfig {
   btcPayServerUrl?: string;
   btcPayStoreId?: string;
   btcPayApiKey?: string;
+  oryToken?: string;
+  autoApprove: boolean;
+  autoApproveThreshold: number;
 }
 
 interface RawConfig {
@@ -85,6 +88,9 @@ function parseConfig(raw: RawConfig): AdminConfig {
     btcPayServerUrl: raw.btcPayServerUrl || undefined,
     btcPayStoreId: raw.btcPayStoreId || undefined,
     btcPayApiKey: raw.btcPayApiKey || undefined,
+    oryToken: raw.ory_token || undefined,
+    autoApprove: parseBoolean(raw.autoApprove, false),
+    autoApproveThreshold: parseNumber(raw.autoApproveThreshold, 100),
   };
 }
 
@@ -224,6 +230,15 @@ export function useAdminConfig() {
       }
       if (updates.btcPayApiKey !== undefined) {
         flatUpdates.btcPayApiKey = updates.btcPayApiKey;
+      }
+      if (updates.oryToken !== undefined) {
+        flatUpdates.ory_token = updates.oryToken;
+      }
+      if (updates.autoApprove !== undefined) {
+        flatUpdates.autoApprove = updates.autoApprove;
+      }
+      if (updates.autoApproveThreshold !== undefined) {
+        flatUpdates.autoApproveThreshold = updates.autoApproveThreshold;
       }
 
       return updateMutation.mutateAsync(flatUpdates);

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useAdminConfig } from "@/hooks/useAdminConfig";
@@ -23,13 +24,24 @@ import {
   DollarSign,
   ArrowUpRight,
   CheckCircle2,
-  QrCode,
+  Zap,
   Coins,
+  Loader2,
 } from "lucide-react";
+
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
+
+interface ProcessResult {
+  processed: number;
+  succeeded: number;
+  failed: number;
+}
 
 export default function Admin() {
   const { user } = useCurrentUser();
-  const { config, isLoading, isAdmin, updateConfig } = useAdminConfig();
+  const { config, isLoading, isAdmin, updateConfig, refreshConfig } = useAdminConfig();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processResult, setProcessResult] = useState<ProcessResult | null>(null);
 
   if (isLoading) {
     return (
@@ -149,14 +161,19 @@ export default function Admin() {
               <div>
                 <p className="text-sm text-muted-foreground">Withdrawal Method</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <Badge variant={config.pullPaymentId ? "default" : "secondary"}>
-                    {config.pullPaymentId ? "Pull Payments" : "Not Configured"}
+                  <Badge variant={config.oryToken ? "default" : "secondary"}>
+                    {config.oryToken ? "Flash API" : "Not Configured"}
                   </Badge>
+                  {config.autoApprove && (
+                    <Badge variant="outline" className="text-xs">
+                      Auto-approve ≤{config.autoApproveThreshold} sats
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {config.pullPaymentId
-                    ? "Instant QR code withdrawals"
-                    : "Configure pull payments below"}
+                  {config.oryToken
+                    ? "Lightning Address payouts enabled"
+                    : "Configure Flash API below"}
                 </p>
               </div>
             </div>
@@ -178,7 +195,7 @@ export default function Admin() {
               <span>Payouts</span>
             </TabsTrigger>
             <TabsTrigger value="btcpay" className="text-xs md:text-sm">
-              <QrCode className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+              <Zap className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
               <span>Pull Payments</span>
             </TabsTrigger>
             <TabsTrigger value="admins" className="text-xs md:text-sm">
@@ -426,36 +443,44 @@ export default function Admin() {
           <TabsContent value="btcpay">
             <Card>
               <CardHeader>
-                <CardTitle>Pull Payment Configuration</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-yellow-500" />
+                  Flash API Configuration
+                </CardTitle>
                 <CardDescription>
-                  Configure BTCPay Server pull payment for instant QR code
-                  withdrawals
+                  Configure Flash API for Lightning Address payouts
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {config.pullPaymentId && config.btcPayServerUrl ? (
+              <CardContent className="space-y-6">
+                {config.oryToken ? (
                   <Alert className="border-green-200 bg-green-50">
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
                     <AlertDescription>
-                      Pull payment is configured and ready for instant withdrawals
+                      Flash API is configured and ready for payouts
                     </AlertDescription>
                   </Alert>
                 ) : (
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      Configure pull payment to enable instant QR code withdrawals
+                      Configure Flash API token to enable Lightning Address payouts
                     </AlertDescription>
                   </Alert>
                 )}
 
                 <Alert className="border-blue-200 bg-blue-50">
-                  <AlertCircle className="h-4 w-4 text-blue-600" />
+                  <Zap className="h-4 w-4 text-blue-600" />
                   <AlertDescription className="text-sm">
-                    <strong>How it works:</strong> Users generate QR codes
-                    instantly using your BTCPay Server pull payment. Create a pull
-                    payment in BTCPay Server, then enter the ID and server URL
-                    below.
+                    <strong>How it works:</strong> Flash API sends sats directly to
+                    users&apos; Lightning Addresses. Get your API token from{" "}
+                    <a
+                      href="https://flash.satsale.io"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                    >
+                      flash.satsale.io
+                    </a>
                   </AlertDescription>
                 </Alert>
 
@@ -463,87 +488,192 @@ export default function Admin() {
                   onSubmit={async (e) => {
                     e.preventDefault();
                     const formData = new FormData(e.currentTarget);
-                    const serverUrl = formData.get("serverUrl") as string;
-                    const storeId = formData.get("storeId") as string;
-                    const apiKey = formData.get("apiKey") as string;
-                    const pullPaymentId = formData.get("pullPaymentId") as string;
+                    const oryToken = formData.get("oryToken") as string;
+                    const threshold = formData.get("threshold") as string;
 
                     await updateConfig({
-                      btcPayServerUrl: serverUrl.trim() || undefined,
-                      btcPayStoreId: storeId.trim() || undefined,
-                      btcPayApiKey: apiKey.trim() || undefined,
-                      pullPaymentId: pullPaymentId.trim() || undefined,
+                      oryToken: oryToken.trim() || undefined,
+                      autoApproveThreshold: parseInt(threshold) || 100,
                     });
                   }}
                   className="space-y-4"
                 >
                   <div>
-                    <Label htmlFor="server-url">BTCPay Server URL</Label>
+                    <Label htmlFor="ory-token">Flash API Token</Label>
                     <Input
-                      id="server-url"
-                      name="serverUrl"
-                      type="url"
-                      placeholder="https://your-btcpay-server.com"
-                      defaultValue={config.btcPayServerUrl || ""}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      The URL of your BTCPay Server instance
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="store-id">Store ID</Label>
-                    <Input
-                      id="store-id"
-                      name="storeId"
-                      type="text"
-                      placeholder="STORE123..."
-                      defaultValue={config.btcPayStoreId || ""}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Your BTCPay Store ID (found in Store Settings)
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="api-key">API Key</Label>
-                    <Input
-                      id="api-key"
-                      name="apiKey"
+                      id="ory-token"
+                      name="oryToken"
                       type="password"
-                      placeholder="Enter API key"
-                      defaultValue={config.btcPayApiKey || ""}
+                      placeholder="Enter your Flash API token"
+                      defaultValue=""
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      Create an API key in BTCPay Server with pull payment
-                      permissions
+                      Your Flash API authentication token (stored securely)
                     </p>
                   </div>
 
                   <div>
-                    <Label htmlFor="pull-payment-id">
-                      Shared Pull Payment ID (Optional)
-                    </Label>
-                    <Input
-                      id="pull-payment-id"
-                      name="pullPaymentId"
-                      type="text"
-                      placeholder="abc123def456..."
-                      defaultValue={config.pullPaymentId || ""}
-                    />
+                    <Label htmlFor="threshold">Auto-Approve Threshold</Label>
+                    <div className="relative">
+                      <Input
+                        id="threshold"
+                        name="threshold"
+                        type="number"
+                        min="1"
+                        placeholder="100"
+                        defaultValue={config.autoApproveThreshold}
+                        className="pr-12"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                        sats
+                      </span>
+                    </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Optional: Fallback shared pull payment for when API is not
-                      available
+                      Maximum amount for automatic payout approval
                     </p>
                   </div>
 
                   <Button type="submit" className="w-full">
-                    <QrCode className="mr-2 h-4 w-4" />
-                    Save Pull Payment Configuration
+                    <Zap className="mr-2 h-4 w-4" />
+                    Save Flash API Configuration
                   </Button>
                 </form>
 
-                {config.pullPaymentId && (
+                <div className="border-t pt-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="auto-approve">Auto-Approve Payouts</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Automatically approve payouts below threshold
+                      </p>
+                    </div>
+                    <Switch
+                      id="auto-approve"
+                      checked={config.autoApprove}
+                      onCheckedChange={(checked) =>
+                        updateConfig({ autoApprove: checked })
+                      }
+                      aria-label="Auto-Approve Payouts"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Badge variant={config.autoApprove ? "default" : "secondary"}>
+                      {config.autoApprove ? "Enabled" : "Disabled"}
+                    </Badge>
+                    {config.autoApprove && (
+                      <span className="text-sm text-muted-foreground">
+                        Up to {config.autoApproveThreshold.toLocaleString()} sats
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="border-t pt-4 space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Batch Process Payouts</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Process all pending payouts using Flash API
+                    </p>
+                    <Button
+                      onClick={async () => {
+                        if (
+                          !confirm(
+                            "Are you sure you want to process all pending payouts?"
+                          )
+                        ) {
+                          return;
+                        }
+
+                        setIsProcessing(true);
+                        setProcessResult(null);
+
+                        try {
+                          const response = await fetch(
+                            `${API_BASE}/admin/payouts/process`,
+                            {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Nostr ${user?.pubkey}`,
+                              },
+                              body: JSON.stringify({
+                                autoApprove: config.autoApprove,
+                                threshold: config.autoApproveThreshold,
+                              }),
+                            }
+                          );
+
+                          if (!response.ok) {
+                            throw new Error("Failed to process payouts");
+                          }
+
+                          const result = await response.json();
+                          setProcessResult(result);
+                          refreshConfig();
+                        } catch (error) {
+                          console.error("Error processing payouts:", error);
+                          setProcessResult({
+                            processed: 0,
+                            succeeded: 0,
+                            failed: 0,
+                          });
+                        } finally {
+                          setIsProcessing(false);
+                        }
+                      }}
+                      disabled={isProcessing || !config.oryToken}
+                      className="w-full"
+                      variant={config.oryToken ? "default" : "secondary"}
+                    >
+                      {isProcessing ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <ArrowUpRight className="mr-2 h-4 w-4" />
+                          Process Pending Payouts
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {processResult && (
+                    <Alert
+                      className={
+                        processResult.failed > 0
+                          ? "border-yellow-200 bg-yellow-50"
+                          : "border-green-200 bg-green-50"
+                      }
+                    >
+                      <CheckCircle2
+                        className={`h-4 w-4 ${
+                          processResult.failed > 0
+                            ? "text-yellow-600"
+                            : "text-green-600"
+                        }`}
+                      />
+                      <AlertDescription>
+                        Processed {processResult.processed} payouts:{" "}
+                        <span className="font-medium text-green-700">
+                          {processResult.succeeded} succeeded
+                        </span>
+                        {processResult.failed > 0 && (
+                          <>
+                            ,{" "}
+                            <span className="font-medium text-red-700">
+                              {processResult.failed} failed
+                            </span>
+                          </>
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+
+                {config.oryToken && (
                   <div className="pt-4 border-t">
                     <Button
                       variant="outline"
@@ -551,14 +681,12 @@ export default function Admin() {
                       onClick={async () => {
                         if (
                           confirm(
-                            "Are you sure you want to remove pull payment configuration?"
+                            "Are you sure you want to remove Flash API configuration?"
                           )
                         ) {
                           await updateConfig({
-                            pullPaymentId: undefined,
-                            btcPayServerUrl: undefined,
-                            btcPayStoreId: undefined,
-                            btcPayApiKey: undefined,
+                            oryToken: undefined,
+                            autoApprove: false,
                           });
                         }
                       }}
