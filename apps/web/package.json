@@ -27,8 +27,8 @@
     "clsx": "^2.0.0",
     "lucide-react": "^0.400.0",
     "nostr-tools": "^2.20.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",
     "tailwind-merge": "^2.2.0"
   },
@@ -42,8 +42,8 @@
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^24.10.1",
-    "@types/react": "^19.2.5",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.17",
     "eslint": "^9.39.1",
@@ -58,6 +58,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
+    "vite-plugin-svgr": "^4.5.0",
     "vitest": "^1.0.0"
   }
 }
