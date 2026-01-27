@@ -291,6 +291,9 @@ export default function Events() {
               >
                 Submit an Event
               </a>
+              <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
+                Have an event to share? You'll need a GitHub account to submit. Click the button above to create an issue with your event details.
+              </p>
             </div>
           </>
         )}
