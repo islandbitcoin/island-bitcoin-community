@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, Image, Menu, MapPin, X } from "lucide-react";
+import { Calendar, Image, Menu, MapPin, X, ExternalLink } from "lucide-react";
 import Logo from "@/assets/logo.svg?react";
 import { useEvents } from "@/hooks/useEvents";
 import { useGallery } from "@/hooks/useGallery";
@@ -148,10 +148,21 @@ export default function Index() {
                         })}
                       </p>
                       <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {locationString}
-                      </p>
-                    </div>
+                         <MapPin className="h-3 w-3" />
+                         {locationString}
+                       </p>
+                       {event.registration?.url && (
+                         <a
+                           href={event.registration.url}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                         >
+                           RSVP
+                           <ExternalLink className="h-3 w-3" />
+                         </a>
+                       )}
+                     </div>
                   );
                 })}
               </div>
