@@ -447,40 +447,40 @@ export default function Admin() {
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 gap-1">
             <TabsTrigger value="rewards" className="text-xs md:text-sm">
               <DollarSign className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-              <span>Rewards</span>
+              <span>Earnings</span>
             </TabsTrigger>
             <TabsTrigger value="limits" className="text-xs md:text-sm">
               <Shield className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-              <span>Limits</span>
+              <span>Safety</span>
             </TabsTrigger>
             <TabsTrigger value="payouts" className="text-xs md:text-sm">
               <ArrowUpRight className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-              <span>Payouts</span>
+              <span>Withdrawals</span>
             </TabsTrigger>
             <TabsTrigger value="btcpay" className="text-xs md:text-sm">
               <Zap className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-              <span>Pull Payments</span>
+              <span>Payment Setup</span>
             </TabsTrigger>
             <TabsTrigger value="admins" className="text-xs md:text-sm">
               <Users className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-              <span>Admins</span>
+              <span>Admin Team</span>
             </TabsTrigger>
             <TabsTrigger value="games" className="text-xs md:text-sm">
               <Coins className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-              <span>Games</span>
+              <span>Game Settings</span>
             </TabsTrigger>
             <TabsTrigger value="events" className="text-xs md:text-sm">
               <Calendar className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-              <span>Events</span>
+              <span>Community Events</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="rewards">
             <Card>
               <CardHeader>
-                <CardTitle>Game Rewards</CardTitle>
+                <CardTitle>Player Earnings Configuration</CardTitle>
                 <CardDescription>
-                  Configure sats rewards for each game type
+                  Set how many sats players earn for completing games and challenges
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
