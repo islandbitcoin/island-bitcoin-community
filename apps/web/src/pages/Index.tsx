@@ -4,9 +4,12 @@ import { Calendar, Image, Menu, MapPin, X } from "lucide-react";
 import Logo from "@/assets/logo.svg?react";
 import { useEvents } from "@/hooks/useEvents";
 import { useGallery } from "@/hooks/useGallery";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/layout/Layout";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { LoginButton } from "@/components/auth/LoginButton";
+import { UserProfile } from "@/components/auth/UserProfile";
 import { BitcoinTrivia } from "@/components/games/BitcoinTrivia";
 import { Leaderboard } from "@/components/games/Leaderboard";
 import { NostrFeed } from "@/components/social/NostrFeed";
@@ -18,6 +21,7 @@ const SITE_DESCRIPTION =
 
 export default function Index() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { user } = useCurrentUser();
   const { events: upcomingEvents, isLoading: eventsLoading } = useEvents("upcoming");
   const previewEvents = upcomingEvents.slice(0, 3);
   const { images, isLoading: galleryLoading } = useGallery();
@@ -37,23 +41,31 @@ export default function Index() {
                   <Logo className="h-8 text-primary" aria-label="Island Bitcoin" />
                 </Link>
                
-               <nav className="hidden md:flex items-center gap-6">
-                 <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                   Events
-                 </Link>
-                 <Link to="/gallery" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                   Gallery
-                 </Link>
-               </nav>
-               
-               <Button
-                 variant="outline"
-                 size="icon"
-                 className="border-primary text-primary hover:bg-primary/10"
-                 onClick={() => setIsSidebarOpen(true)}
-               >
-                 <Menu className="h-5 w-5" />
-               </Button>
+                <nav className="hidden md:flex items-center gap-6">
+                  <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                    Events
+                  </Link>
+                  <Link to="/gallery" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                    Gallery
+                  </Link>
+                </nav>
+                
+                <div className="flex items-center gap-2">
+                  {user ? (
+                    <UserProfile className="hidden sm:flex" />
+                  ) : (
+                    <LoginButton className="hidden sm:flex" />
+                  )}
+                  
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="border-primary text-primary hover:bg-primary/10"
+                    onClick={() => setIsSidebarOpen(true)}
+                  >
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </div>
              </div>
            </div>
          </header>
