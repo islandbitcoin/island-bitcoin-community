@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, Image, Menu, MapPin, X } from "lucide-react";
+import Logo from "@/assets/logo.svg?react";
 import { useEvents } from "@/hooks/useEvents";
 import { useGallery } from "@/hooks/useGallery";
 import { Button } from "@/components/ui/button";
@@ -32,9 +33,9 @@ export default function Index() {
          >
            <div className="container mx-auto px-4 py-3">
              <div className="flex items-center justify-between">
-               <Link to="/" className="flex items-center gap-2">
-                 <span className="text-xl font-bold text-primary">Island Bitcoin</span>
-               </Link>
+                <Link to="/" className="flex items-center gap-2">
+                  <Logo className="h-8 text-primary" aria-label="Island Bitcoin" />
+                </Link>
                
                <nav className="hidden md:flex items-center gap-6">
                  <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
@@ -260,49 +261,9 @@ export default function Index() {
           className="py-8 sm:py-12 bg-muted/50 border-t border-border"
         >
           <div className="container mx-auto px-4">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div className="text-center md:text-left">
-                <p className="text-sm text-muted-foreground">
-                  &copy; {new Date().getFullYear()} {SITE_NAME}. Built with B
-                  and islands
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Vibed with{" "}
-                  <a
-                    href="https://soapbox.pub/tools/mkstack/"
-                    className="text-primary hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    MKStack
-                  </a>
-                </p>
-              </div>
-              <div className="flex gap-2 sm:gap-4">
-                <Link to="/about">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
-                  >
-                    About
-                  </Button>
-                </Link>
-                <a
-                  href="https://github.com/islandbitcoin/islandbitcoin-community/tree/main/mediakit"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
-                  >
-                    Media Kit
-                  </Button>
-                </a>
-              </div>
-            </div>
+            <p className="text-sm text-muted-foreground text-center">
+              &copy; {new Date().getFullYear()} {SITE_NAME}
+            </p>
           </div>
         </footer>
 
