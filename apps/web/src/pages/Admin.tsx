@@ -47,15 +47,16 @@ interface ProcessResult {
 interface EventsTabProps {}
 
 function EventsTab({}: EventsTabProps) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [startDateTime, setStartDateTime] = useState("");
-  const [endDateTime, setEndDateTime] = useState("");
-  const [location, setLocation] = useState("");
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [hasNostr, setHasNostr] = useState(false);
-  const [editingEventId, setEditingEventId] = useState<string | null>(null);
-  const { events, isLoading, refresh } = useEvents("all");
+   const [title, setTitle] = useState("");
+   const [description, setDescription] = useState("");
+   const [startDateTime, setStartDateTime] = useState("");
+   const [endDateTime, setEndDateTime] = useState("");
+   const [location, setLocation] = useState("");
+   const [rsvpLink, setRsvpLink] = useState("");
+   const [isPublishing, setIsPublishing] = useState(false);
+   const [hasNostr, setHasNostr] = useState(false);
+   const [editingEventId, setEditingEventId] = useState<string | null>(null);
+   const { events, isLoading, refresh } = useEvents("all");
 
   useEffect(() => {
     setHasNostr(typeof window !== "undefined" && !!window.nostr);
@@ -72,24 +73,26 @@ function EventsTab({}: EventsTabProps) {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
-  const handleEditEvent = (item: any) => {
-    const event = item.event.event;
-    setTitle(event.basic_info.title);
-    setDescription(event.basic_info.description);
-    setStartDateTime(formatDateTimeLocal(event.datetime.start));
-    setEndDateTime(event.datetime.end ? formatDateTimeLocal(event.datetime.end) : "");
-    setLocation(event.location?.name || "");
-    setEditingEventId(event.id); // CRITICAL: Store the original d tag!
-  };
+   const handleEditEvent = (item: any) => {
+     const event = item.event.event;
+     setTitle(event.basic_info.title);
+     setDescription(event.basic_info.description);
+     setStartDateTime(formatDateTimeLocal(event.datetime.start));
+     setEndDateTime(event.datetime.end ? formatDateTimeLocal(event.datetime.end) : "");
+     setLocation(event.location?.name || "");
+     setRsvpLink(event.registration?.url || "");
+     setEditingEventId(event.id); // CRITICAL: Store the original d tag!
+   };
 
-  const handleCancelEdit = () => {
-    setEditingEventId(null);
-    setTitle("");
-    setDescription("");
-    setStartDateTime("");
-    setEndDateTime("");
-    setLocation("");
-  };
+   const handleCancelEdit = () => {
+     setEditingEventId(null);
+     setTitle("");
+     setDescription("");
+     setStartDateTime("");
+     setEndDateTime("");
+     setLocation("");
+     setRsvpLink("");
+   };
 
   const handlePublishEvent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,19 +118,23 @@ function EventsTab({}: EventsTabProps) {
       // CRITICAL: Preserve d tag when editing, generate new one when creating
       const uniqueId = editingEventId || `${title.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`;
 
-      const tags: string[][] = [
-        ["d", uniqueId],
-        ["title", title],
-        ["start", startUnix.toString()],
-      ];
+       const tags: string[][] = [
+         ["d", uniqueId],
+         ["title", title],
+         ["start", startUnix.toString()],
+       ];
 
-      if (endUnix) {
-        tags.push(["end", endUnix.toString()]);
-      }
+       if (endUnix) {
+         tags.push(["end", endUnix.toString()]);
+       }
 
-      if (location) {
-        tags.push(["location", location]);
-      }
+       if (location) {
+         tags.push(["location", location]);
+       }
+
+       if (rsvpLink.trim()) {
+         tags.push(["r", rsvpLink.trim()]);
+       }
 
       const event = {
         kind: 31923,
@@ -300,19 +307,32 @@ function EventsTab({}: EventsTabProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="event-location" className="text-cyan-400/90 font-mono text-sm">Location 📍</Label>
-            <Input
-              id="event-location"
-              placeholder="e.g., San Francisco, CA"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              disabled={isPublishing}
-              className="bg-slate-950 border-cyan-500/30 text-cyan-400 font-mono focus:border-cyan-400 focus:ring-cyan-400/50 placeholder:text-slate-500"
-            />
-          </div>
+           <div className="space-y-2">
+             <Label htmlFor="event-location" className="text-cyan-400/90 font-mono text-sm">Location 📍</Label>
+             <Input
+               id="event-location"
+               placeholder="e.g., San Francisco, CA"
+               value={location}
+               onChange={(e) => setLocation(e.target.value)}
+               disabled={isPublishing}
+               className="bg-slate-950 border-cyan-500/30 text-cyan-400 font-mono focus:border-cyan-400 focus:ring-cyan-400/50 placeholder:text-slate-500"
+             />
+           </div>
 
-          <div className="flex gap-2">
+           <div className="space-y-2">
+             <Label htmlFor="event-rsvp" className="text-cyan-400/90 font-mono text-sm">RSVP Link 🔗</Label>
+             <Input
+               id="event-rsvp"
+               type="url"
+               placeholder="https://meetup.com/your-event"
+               value={rsvpLink}
+               onChange={(e) => setRsvpLink(e.target.value)}
+               disabled={isPublishing}
+               className="bg-slate-950 border-cyan-500/30 text-cyan-400 font-mono focus:border-cyan-400 focus:ring-cyan-400/50 placeholder:text-slate-500"
+             />
+           </div>
+
+           <div className="flex gap-2">
             <Button
               type="submit"
               disabled={isPublishing || !hasNostr}
