@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "./useCurrentUser";
+import { createNIP98AuthHeader } from "@/lib/nip98";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
@@ -94,10 +95,11 @@ function parseConfig(raw: RawConfig): AdminConfig {
   };
 }
 
-async function fetchConfig(pubkey: string): Promise<RawConfig> {
+async function fetchConfig(): Promise<RawConfig> {
+  const authHeader = await createNIP98AuthHeader(`${API_BASE}/config`, 'GET');
   const response = await fetch(`${API_BASE}/config`, {
     headers: {
-      Authorization: `Nostr ${pubkey}`,
+      Authorization: authHeader,
     },
   });
 
@@ -109,14 +111,14 @@ async function fetchConfig(pubkey: string): Promise<RawConfig> {
 }
 
 async function updateConfigApi(
-  pubkey: string,
   updates: Record<string, unknown>
 ): Promise<{ success: boolean }> {
+  const authHeader = await createNIP98AuthHeader(`${API_BASE}/config`, 'POST');
   const response = await fetch(`${API_BASE}/config`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Nostr ${pubkey}`,
+      Authorization: authHeader,
     },
     body: JSON.stringify(updates),
   });
@@ -137,8 +139,8 @@ export function useAdminConfig() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["admin-config", user?.pubkey],
-    queryFn: () => fetchConfig(user!.pubkey),
+    queryKey: ["admin-config"],
+    queryFn: () => fetchConfig(),
     enabled: !!user?.pubkey,
     staleTime: 30 * 1000,
   });
@@ -155,9 +157,9 @@ export function useAdminConfig() {
 
   const updateMutation = useMutation({
     mutationFn: (updates: Record<string, unknown>) =>
-      updateConfigApi(user!.pubkey, updates),
+      updateConfigApi(updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-config", user?.pubkey] });
+      queryClient.invalidateQueries({ queryKey: ["admin-config"] });
     },
   });
 
@@ -248,7 +250,7 @@ export function useAdminConfig() {
 
   const refreshConfig = useCallback(() => {
     if (user?.pubkey) {
-      queryClient.invalidateQueries({ queryKey: ["admin-config", user.pubkey] });
+      queryClient.invalidateQueries({ queryKey: ["admin-config"] });
     }
   }, [user?.pubkey, queryClient]);
 
