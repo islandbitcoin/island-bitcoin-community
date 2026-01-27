@@ -176,8 +176,10 @@ export async function requireAdmin(c: Context, next: Next): Promise<void> {
     .where(eq(config.key, 'admin_pubkeys'))
     .get();
   
+  // If no admin config exists, allow first user to become admin
   if (!adminConfig) {
-    throw new HTTPException(403, { message: 'Admin list not configured' });
+    await next();
+    return;
   }
   
   let adminPubkeys: string[];
@@ -187,7 +189,14 @@ export async function requireAdmin(c: Context, next: Next): Promise<void> {
     throw new HTTPException(500, { message: 'Invalid admin list configuration' });
   }
   
-  if (!Array.isArray(adminPubkeys) || !adminPubkeys.includes(pubkey)) {
+  // If admin list is empty, allow first user to become admin
+  if (!Array.isArray(adminPubkeys) || adminPubkeys.length === 0) {
+    await next();
+    return;
+  }
+  
+  // Check if user is in admin list
+  if (!adminPubkeys.includes(pubkey)) {
     throw new HTTPException(403, { message: 'Admin privileges required' });
   }
   
