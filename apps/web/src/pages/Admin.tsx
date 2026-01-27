@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useAdminConfig } from "@/hooks/useAdminConfig";
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { PayoutsTable } from "@/components/admin/PayoutsTable";
 import {
   Users,
@@ -27,14 +28,276 @@ import {
   Zap,
   Coins,
   Loader2,
+  Calendar,
 } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
+const RELAYS = [
+  "wss://relay.flashapp.me",
+  "wss://relay.damus.io",
+  "wss://nostr.oxtr.dev",
+];
 
 interface ProcessResult {
   processed: number;
   succeeded: number;
   failed: number;
+}
+
+interface EventsTabProps {}
+
+function EventsTab({}: EventsTabProps) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [startDateTime, setStartDateTime] = useState("");
+  const [endDateTime, setEndDateTime] = useState("");
+  const [location, setLocation] = useState("");
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [hasNostr, setHasNostr] = useState(false);
+
+  useEffect(() => {
+    setHasNostr(typeof window !== "undefined" && !!window.nostr);
+  }, []);
+
+  const handlePublishEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!window.nostr) {
+      alert("NIP-07 browser extension not found. Please install a Nostr signer extension.");
+      return;
+    }
+
+    if (!title || !startDateTime) {
+      alert("Title and Start Date/Time are required");
+      return;
+    }
+
+    setIsPublishing(true);
+
+    try {
+      const startUnix = Math.floor(new Date(startDateTime).getTime() / 1000);
+      const endUnix = endDateTime
+        ? Math.floor(new Date(endDateTime).getTime() / 1000)
+        : undefined;
+
+      const uniqueId = `${title.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`;
+
+      const tags: string[][] = [
+        ["d", uniqueId],
+        ["title", title],
+        ["start", startUnix.toString()],
+      ];
+
+      if (endUnix) {
+        tags.push(["end", endUnix.toString()]);
+      }
+
+      if (location) {
+        tags.push(["location", location]);
+      }
+
+      const event = {
+        kind: 31923,
+        created_at: Math.floor(Date.now() / 1000),
+        tags,
+        content: description,
+        pubkey: "",
+      };
+
+      const signedEvent = await window.nostr.signEvent(event);
+
+      let publishedToAny = false;
+      const errors: string[] = [];
+
+      for (const relay of RELAYS) {
+        try {
+          const ws = new WebSocket(relay);
+
+          await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              ws.close();
+              reject(new Error("Connection timeout"));
+            }, 5000);
+
+            ws.onopen = () => {
+              clearTimeout(timeout);
+              ws.send(JSON.stringify(["EVENT", signedEvent]));
+            };
+
+            ws.onmessage = (event) => {
+              const msg = JSON.parse(event.data);
+              if (msg[0] === "OK") {
+                publishedToAny = true;
+                ws.close();
+                resolve();
+              }
+            };
+
+            ws.onerror = () => {
+              clearTimeout(timeout);
+              ws.close();
+              reject(new Error(`Failed to connect to ${relay}`));
+            };
+
+            ws.onclose = () => {
+              clearTimeout(timeout);
+              if (!publishedToAny) {
+                resolve();
+              }
+            };
+          });
+        } catch (error) {
+          errors.push(
+            error instanceof Error ? error.message : `Failed to publish to ${relay}`
+          );
+        }
+      }
+
+      if (publishedToAny) {
+        alert(
+          `Event published successfully!\n\nEvent ID: ${signedEvent.id}\nTitle: ${title}`
+        );
+        setTitle("");
+        setDescription("");
+        setStartDateTime("");
+        setEndDateTime("");
+        setLocation("");
+      } else {
+        alert(
+          `Failed to publish event to any relay.\n\nErrors:\n${errors.join("\n")}`
+        );
+      }
+    } catch (error) {
+      const errorMsg =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      alert(`Error publishing event: ${errorMsg}`);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-primary" />
+          Publish Calendar Event
+        </CardTitle>
+        <CardDescription>
+          Create and publish a NIP-52 calendar event to Nostr relays
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {!hasNostr && (
+          <Alert className="border-yellow-200 bg-yellow-50">
+            <AlertCircle className="h-4 w-4 text-yellow-600" />
+            <AlertDescription className="text-yellow-800">
+              NIP-07 browser extension not detected. Install a Nostr signer extension
+              (like Alby or nos2x) to publish events.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {hasNostr && (
+          <Alert className="border-green-200 bg-green-50">
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              NIP-07 extension detected. Ready to publish events.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <form onSubmit={handlePublishEvent} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="event-title">Event Title *</Label>
+            <Input
+              id="event-title"
+              placeholder="e.g., Bitcoin Meetup 2026"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              disabled={isPublishing}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="event-description">Description</Label>
+            <Textarea
+              id="event-description"
+              placeholder="Event details and description (optional)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={isPublishing}
+              rows={4}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="event-start">Start Date/Time *</Label>
+              <Input
+                id="event-start"
+                type="datetime-local"
+                value={startDateTime}
+                onChange={(e) => setStartDateTime(e.target.value)}
+                required
+                disabled={isPublishing}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="event-end">End Date/Time</Label>
+              <Input
+                id="event-end"
+                type="datetime-local"
+                value={endDateTime}
+                onChange={(e) => setEndDateTime(e.target.value)}
+                disabled={isPublishing}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="event-location">Location</Label>
+            <Input
+              id="event-location"
+              placeholder="e.g., San Francisco, CA"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              disabled={isPublishing}
+            />
+          </div>
+
+          <Button
+            type="submit"
+            disabled={isPublishing || !hasNostr}
+            className="w-full"
+          >
+            {isPublishing ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Publishing...
+              </>
+            ) : (
+              <>
+                <Calendar className="mr-2 h-4 w-4" />
+                Publish Event
+              </>
+            )}
+          </Button>
+        </form>
+
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="text-sm">
+            <strong>How it works:</strong> Events are published to Nostr relays using
+            NIP-52 (Calendar Events) standard. Your browser extension will sign the
+            event with your private key. No private keys are stored on this server.
+          </AlertDescription>
+        </Alert>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function Admin() {
@@ -205,6 +468,10 @@ export default function Admin() {
             <TabsTrigger value="games" className="text-xs md:text-sm">
               <Coins className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
               <span>Games</span>
+            </TabsTrigger>
+            <TabsTrigger value="events" className="text-xs md:text-sm">
+              <Calendar className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+              <span>Events</span>
             </TabsTrigger>
           </TabsList>
 
@@ -747,53 +1014,57 @@ export default function Admin() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="games">
-            <Card>
-              <CardHeader>
-                <CardTitle>Game Management</CardTitle>
-                <CardDescription>
-                  Control which games are available to users
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-lg border border-amber-200 hover:border-primary/30 transition-colors">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Coins className="h-5 w-5 text-primary" />
-                        <h4 className="font-medium">Satoshi Stacker</h4>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        A clicker game where users can stack sats and earn real
-                        Bitcoin rewards through proof of work
-                      </p>
-                    </div>
-                    <Switch
-                      id="satoshi-stacker"
-                      checked={config.gameVisibility.satoshiStacker}
-                      onCheckedChange={(checked) =>
-                        updateConfig({
-                          gameVisibility: {
-                            ...config.gameVisibility,
-                            satoshiStacker: checked,
-                          },
-                        })
-                      }
-                    />
-                  </div>
-                </div>
+           <TabsContent value="games">
+             <Card>
+               <CardHeader>
+                 <CardTitle>Game Management</CardTitle>
+                 <CardDescription>
+                   Control which games are available to users
+                 </CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-4">
+                 <div className="space-y-4">
+                   <div className="flex items-center justify-between p-4 rounded-lg border border-amber-200 hover:border-primary/30 transition-colors">
+                     <div className="space-y-1">
+                       <div className="flex items-center gap-2">
+                         <Coins className="h-5 w-5 text-primary" />
+                         <h4 className="font-medium">Satoshi Stacker</h4>
+                       </div>
+                       <p className="text-sm text-muted-foreground">
+                         A clicker game where users can stack sats and earn real
+                         Bitcoin rewards through proof of work
+                       </p>
+                     </div>
+                     <Switch
+                       id="satoshi-stacker"
+                       checked={config.gameVisibility.satoshiStacker}
+                       onCheckedChange={(checked) =>
+                         updateConfig({
+                           gameVisibility: {
+                             ...config.gameVisibility,
+                             satoshiStacker: checked,
+                           },
+                         })
+                       }
+                     />
+                   </div>
+                 </div>
 
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Games marked as hidden will not appear in the Bitcoin Education
-                    Games section. Only admins can change game visibility settings.
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                 <Alert>
+                   <AlertCircle className="h-4 w-4" />
+                   <AlertDescription>
+                     Games marked as hidden will not appear in the Bitcoin Education
+                     Games section. Only admins can change game visibility settings.
+                   </AlertDescription>
+                 </Alert>
+               </CardContent>
+             </Card>
+           </TabsContent>
+
+           <TabsContent value="events">
+             <EventsTab />
+           </TabsContent>
+         </Tabs>
       </div>
     </div>
   );
