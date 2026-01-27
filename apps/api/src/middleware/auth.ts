@@ -128,9 +128,12 @@ export async function requireAuth(c: Context, next: Next): Promise<void> {
   // Extract event from header
   const event = extractNIP98Event(authHeader);
   
-  // Build full request URL
+  // Build full request URL from proxy headers (Caddy sets X-Forwarded-* headers)
+  const proto = c.req.header('X-Forwarded-Proto') || 'http';
+  const host = c.req.header('X-Forwarded-Host') || c.req.header('Host') || new URL(c.req.url).host;
   const url = new URL(c.req.url);
-  const requestUrl = url.toString();
+  const path = url.pathname + url.search;
+  const requestUrl = `${proto}://${host}${path}`;
   const requestMethod = c.req.method;
   
   // Validate event
