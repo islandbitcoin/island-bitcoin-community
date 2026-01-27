@@ -96,7 +96,8 @@ function parseConfig(raw: RawConfig): AdminConfig {
 }
 
 async function fetchConfig(): Promise<RawConfig> {
-  const authHeader = await createNIP98AuthHeader(`${API_BASE}/config`, 'GET');
+  const url = `${window.location.origin}${API_BASE}/config`;
+  const authHeader = await createNIP98AuthHeader(url, 'GET');
   const response = await fetch(`${API_BASE}/config`, {
     headers: {
       Authorization: authHeader,
@@ -113,7 +114,8 @@ async function fetchConfig(): Promise<RawConfig> {
 async function updateConfigApi(
   updates: Record<string, unknown>
 ): Promise<{ success: boolean }> {
-  const authHeader = await createNIP98AuthHeader(`${API_BASE}/config`, 'POST');
+  const url = `${window.location.origin}${API_BASE}/config`;
+  const authHeader = await createNIP98AuthHeader(url, 'POST');
   const response = await fetch(`${API_BASE}/config`, {
     method: "POST",
     headers: {
