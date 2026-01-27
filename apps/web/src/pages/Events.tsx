@@ -5,6 +5,8 @@ import { useEvents, type EventFilter } from "@/hooks/useEvents";
 import type { EventWithDate } from "@/types/events";
 import { cn } from "@/lib/utils";
 
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
+
 function EventIcon({ type }: { type: string }) {
   switch (type) {
     case "meetup":
@@ -159,11 +161,18 @@ export default function Events() {
   const [selectedEvent, setSelectedEvent] = useState<EventWithDate | null>(null);
   const { events, isLoading, error, refresh } = useEvents(filter);
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    refresh();
-    setTimeout(() => setIsRefreshing(false), 500);
-  };
+   const handleRefresh = async () => {
+     setIsRefreshing(true);
+     try {
+       // Clear server cache first
+       await fetch(`${API_BASE}/events/refresh`, { method: 'POST' });
+     } catch (e) {
+       console.error('Failed to clear server cache:', e);
+     }
+     // Always refresh React Query regardless of API result
+     refresh();
+     setTimeout(() => setIsRefreshing(false), 500);
+   };
 
   const filterButtons: { value: EventFilter; label: string }[] = [
     { value: "all", label: "All Events" },
