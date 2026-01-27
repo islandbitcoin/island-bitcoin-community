@@ -30,14 +30,19 @@ function transformToEventoFormat(calendarEvent: CalendarEvent) {
           country: 'Caribbean',
         },
       },
-      organizer: {
-        name: 'Island Bitcoin',
-        nostr: {
-          npub: calendarEvent.pubkey,
-        },
-      },
-    },
-  };
+       organizer: {
+         name: 'Island Bitcoin',
+         nostr: {
+           npub: calendarEvent.pubkey,
+         },
+       },
+       ...(calendarEvent.registrationUrl && {
+         registration: {
+           url: calendarEvent.registrationUrl,
+         },
+       }),
+     },
+   };
 }
 
 // Root handler - returns all events in Evento.so format for frontend compatibility

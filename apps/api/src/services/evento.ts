@@ -8,6 +8,7 @@ export interface CalendarEvent {
   end: number | null;
   location: string;
   pubkey: string;
+  registrationUrl?: string;
 }
 
 // Reliable relays for NIP-52 calendar event queries
@@ -18,7 +19,7 @@ const DEFAULT_RELAYS = [
   'wss://relay.nostr.band',
 ];
 
-const ISLAND_BITCOIN_PUBKEY = '96e31c34591d5d35eb3d64ec84b666cce6f35c5172a43c2c7e3187ab5b5ae8ac';
+const ISLAND_BITCOIN_PUBKEY = '96f18e1a3647574bdacfb3b64172c66b39be6b917290f12c7f18bcd0aed6ba2c';
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const NIP52_KIND = 31923;
@@ -59,11 +60,12 @@ function parseNip52Event(event: { kind: number; tags: string[][]; content: strin
     return tag ? tag[1] : '';
   };
 
-  const id = getTag('d');
-  const title = getTag('title');
-  const startStr = getTag('start');
-  const endStr = getTag('end');
-  const location = getTag('location');
+   const id = getTag('d');
+   const title = getTag('title');
+   const startStr = getTag('start');
+   const endStr = getTag('end');
+   const location = getTag('location');
+   const registrationUrl = getTag('r');
 
   if (!id || !title || !startStr) return null;
 
@@ -72,15 +74,16 @@ function parseNip52Event(event: { kind: number; tags: string[][]; content: strin
 
   const end = endStr ? parseInt(endStr, 10) : null;
 
-  return {
-    id,
-    title,
-    description: event.content || '',
-    start,
-    end: end && !isNaN(end) ? end : null,
-    location: location || '',
-    pubkey: event.pubkey,
-  };
+   return {
+     id,
+     title,
+     description: event.content || '',
+     start,
+     end: end && !isNaN(end) ? end : null,
+     location: location || '',
+     pubkey: event.pubkey,
+     registrationUrl: registrationUrl || undefined,
+   };
 }
 
 async function fetchNip52Events(relays: string[] = DEFAULT_RELAYS): Promise<CalendarEvent[]> {
