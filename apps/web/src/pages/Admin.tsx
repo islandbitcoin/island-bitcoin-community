@@ -405,7 +405,7 @@ function EventsTab({}: EventsTabProps) {
 }
 
 
-type AdminSection = "rewards" | "limits" | "payouts" | "btcpay" | "admins" | "games" | "events";
+type AdminSection = "rewards" | "limits" | "payouts" | "btcpay" | "admins" | "games" | "events" | "social";
 
 const ADMIN_SECTIONS: { value: AdminSection; label: string; emoji: string }[] = [
   { value: "rewards", label: "Earnings", emoji: "💰" },
@@ -415,14 +415,19 @@ const ADMIN_SECTIONS: { value: AdminSection; label: string; emoji: string }[] = 
   { value: "admins", label: "Admin Team", emoji: "👥" },
   { value: "games", label: "Game Settings", emoji: "🎮" },
   { value: "events", label: "Community Events", emoji: "📅" },
+  { value: "social", label: "Social Feed", emoji: "💬" },
 ];
 
 export default function Admin() {
-  const { user } = useCurrentUser();
-  const { config, isLoading, isAdmin, updateConfig, refreshConfig } = useAdminConfig();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [processResult, setProcessResult] = useState<ProcessResult | null>(null);
-  const [activeSection, setActiveSection] = useState<AdminSection>("rewards");
+   const { user } = useCurrentUser();
+   const { config, isLoading, isAdmin, updateConfig, refreshConfig } = useAdminConfig();
+   const [isProcessing, setIsProcessing] = useState(false);
+   const [processResult, setProcessResult] = useState<ProcessResult | null>(null);
+   const [activeSection, setActiveSection] = useState<AdminSection>("rewards");
+   const [newDomain, setNewDomain] = useState("");
+   const [newPubkey, setNewPubkey] = useState("");
+   const [isDiscovering, setIsDiscovering] = useState(false);
+   const [discoverResult, setDiscoverResult] = useState<any>(null);
 
   if (isLoading) {
     return (
@@ -1164,6 +1169,223 @@ export default function Admin() {
            {activeSection === "events" && (
              <EventsTab />
            )}
+
+           {activeSection === "social" && (
+             <Card className="border-2 border-cyan-500/30 shadow-lg shadow-cyan-500/20 bg-slate-900/90 backdrop-blur">
+               <CardHeader className="border-b border-cyan-500/20">
+                 <CardTitle className="text-2xl font-mono tracking-wide text-cyan-400 flex items-center gap-3">
+                   <span className="text-4xl">💬</span>
+                   Social Feed Whitelist
+                 </CardTitle>
+                 <CardDescription className="text-slate-400 font-mono text-sm">
+                   // Manage whitelisted NIP-05 domains for the social feed 🌐
+                 </CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-6 pt-6">
+                 <div className="space-y-4">
+                   <div className="flex gap-2">
+                     <Input
+                       placeholder="Enter domain (e.g., islandbitcoin.com)"
+                       value={newDomain}
+                       onChange={(e) => setNewDomain(e.target.value)}
+                       className="bg-slate-950 border-cyan-500/30 text-cyan-400 font-mono focus:border-cyan-400 focus:ring-cyan-400/50"
+                     />
+                     <Button
+                       onClick={() => {
+                         if (!newDomain) return;
+                         const current = config.whitelistedDomains || [];
+                         if (current.includes(newDomain)) return;
+                         updateConfig({ whitelistedDomains: [...current, newDomain] });
+                         setNewDomain("");
+                       }}
+                       className="bg-cyan-600 hover:bg-cyan-500 text-white font-mono"
+                     >
+                       Add Domain
+                     </Button>
+                   </div>
+
+                   <div className="space-y-2">
+                      <Label className="text-cyan-400/90 font-mono text-sm">Whitelisted Domains</Label>
+                      {(!config.whitelistedDomains || config.whitelistedDomains.length === 0) ? (
+                        <p className="text-sm text-slate-400 font-mono">
+                          No domains whitelisted.
+                        </p>
+                      ) : (
+                        <div className="grid gap-2">
+                          {config.whitelistedDomains.map((domain) => (
+                            <div
+                              key={domain}
+                              className="flex items-center justify-between p-3 bg-slate-950 rounded-lg border border-cyan-500/30"
+                            >
+                              <code className="text-sm text-cyan-400 font-mono">
+                                {domain}
+                              </code>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const current = config.whitelistedDomains || [];
+                                  updateConfig({ whitelistedDomains: current.filter((d) => d !== domain) });
+                                }}
+                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                     </div>
+
+                     <div className="bg-slate-950/50 border border-purple-500/30 rounded-lg p-6 mb-6">
+                       <div className="flex items-start justify-between mb-4">
+                         <div>
+                           <h3 className="text-lg font-mono text-purple-400 font-medium mb-1">🔍 Discover from NIP-05 Domains</h3>
+                           <p className="text-xs text-slate-400 font-mono">
+                             Automatically fetch pubkeys from NIP-05 endpoints on whitelisted domains
+                           </p>
+                         </div>
+                       </div>
+                       <Button
+                         onClick={async () => {
+                           if (!user?.pubkey) return;
+                           setIsDiscovering(true);
+                           setDiscoverResult(null);
+                           try {
+                             const response = await fetch(`${API_BASE}/config/discover-pubkeys`, {
+                               method: "POST",
+                               headers: {
+                                 "Content-Type": "application/json",
+                                 Authorization: `Nostr ${user.pubkey}`,
+                               },
+                             });
+                             if (!response.ok) throw new Error("Failed to discover pubkeys");
+                             const result = await response.json();
+                             setDiscoverResult(result);
+                             refreshConfig();
+                           } catch (error) {
+                             console.error("Error discovering pubkeys:", error);
+                             setDiscoverResult({ success: false, error: error instanceof Error ? error.message : "Unknown error" });
+                           } finally {
+                             setIsDiscovering(false);
+                           }
+                         }}
+                         disabled={isDiscovering}
+                         className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 shadow-lg shadow-purple-500/50 border border-purple-400/30 font-mono"
+                       >
+                         {isDiscovering ? (
+                           <>
+                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                             Discovering...
+                           </>
+                         ) : (
+                           <>
+                             <Zap className="mr-2 h-4 w-4" />
+                             Discover Pubkeys
+                           </>
+                         )}
+                       </Button>
+
+                       {discoverResult && (
+                         <div className={`mt-4 p-4 rounded-lg border ${discoverResult.success ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-red-500/30 bg-red-500/10'}`}>
+                           {discoverResult.success ? (
+                             <div className="space-y-3">
+                               <div className="flex items-center gap-2 font-mono">
+                                 <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                                 <span className="text-slate-300">
+                                   Discovered <span className="text-emerald-400 font-bold">{discoverResult.discovered}</span> new pubkeys
+                                 </span>
+                                 <span className="text-slate-400">
+                                   (Total: <span className="text-cyan-400">{discoverResult.total}</span>)
+                                 </span>
+                               </div>
+                               {discoverResult.domains && Object.keys(discoverResult.domains).length > 0 && (
+                                 <div className="text-xs text-slate-400 font-mono space-y-1 ml-6">
+                                   {Object.entries(discoverResult.domains).map(([domain, result]: [string, any]) => (
+                                     <div key={domain} className="flex items-center gap-2">
+                                       <span className="text-slate-500">•</span>
+                                       <span>
+                                         {domain}:{' '}
+                                         {result.error ? (
+                                           <span className="text-red-400">{result.error}</span>
+                                         ) : (
+                                           <span className="text-emerald-400">{result.found} pubkeys</span>
+                                         )}
+                                       </span>
+                                     </div>
+                                   ))}
+                                 </div>
+                               )}
+                             </div>
+                           ) : (
+                             <div className="flex items-center gap-2 font-mono">
+                               <AlertCircle className="h-4 w-4 text-red-400" />
+                               <span className="text-red-300">{discoverResult.error || "Discovery failed"}</span>
+                             </div>
+                           )}
+                         </div>
+                       )}
+                     </div>
+
+                     <div className="border-t border-cyan-500/20 pt-6">
+                       <Label className="text-cyan-400/90 font-mono text-sm mb-4 block">Community Member Pubkeys</Label>
+                      <p className="text-xs text-slate-400 font-mono mb-4">
+                        Add pubkeys of verified community members to show their posts directly.
+                      </p>
+                      <div className="flex gap-2 mb-4">
+                        <Input
+                          placeholder="Enter pubkey (64 hex characters)"
+                          value={newPubkey}
+                          onChange={(e) => setNewPubkey(e.target.value)}
+                          className="bg-slate-950 border-cyan-500/30 text-cyan-400 font-mono focus:border-cyan-400 focus:ring-cyan-400/50 text-xs"
+                        />
+                        <Button
+                          onClick={() => {
+                            if (!newPubkey || newPubkey.length !== 64) return;
+                            const current = config.communityPubkeys || [];
+                            if (current.includes(newPubkey)) return;
+                            updateConfig({ communityPubkeys: [...current, newPubkey] });
+                            setNewPubkey("");
+                          }}
+                          className="bg-cyan-600 hover:bg-cyan-500 text-white font-mono"
+                        >
+                          Add Pubkey
+                        </Button>
+                      </div>
+                      {(!config.communityPubkeys || config.communityPubkeys.length === 0) ? (
+                        <p className="text-sm text-slate-400 font-mono">
+                          No community pubkeys configured.
+                        </p>
+                      ) : (
+                        <div className="grid gap-2">
+                          {config.communityPubkeys.map((pubkey) => (
+                            <div
+                              key={pubkey}
+                              className="flex items-center justify-between p-3 bg-slate-950 rounded-lg border border-cyan-500/30"
+                            >
+                              <code className="text-xs text-cyan-400 font-mono truncate max-w-[200px]">
+                                {pubkey.slice(0, 16)}...{pubkey.slice(-8)}
+                              </code>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const current = config.communityPubkeys || [];
+                                  updateConfig({ communityPubkeys: current.filter((p) => p !== pubkey) });
+                                }}
+                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
         </div>
       </div>
     </div>

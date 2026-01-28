@@ -1,6 +1,8 @@
 {
-  "active_plan": "/Users/dread/Documents/Island-Bitcoin/Island Bitcoin/island-bitcoin-community/.sisyphus/plans/data-migration.md",
-  "started_at": "2026-01-26T16:14:49.920Z",
+  "active_plan": null,
+  "started_at": "2026-01-27T23:34:16.346Z",
+  "completed_at": "2026-01-28T00:00:00.000Z",
   "session_ids": ["ses_40a887f59ffeoZzwqJBTrbd4pW"],
-  "plan_name": "data-migration"
+  "plan_name": "rsvp-link-feature",
+  "status": "completed"
 }

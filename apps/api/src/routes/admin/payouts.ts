@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { db } from '../../db';
-import { payouts, config } from '../../db/schema';
+import { payouts } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 import { requireAuth, requireAdmin } from '../../middleware/auth';
 import { sendPayment } from '../../services/flash';

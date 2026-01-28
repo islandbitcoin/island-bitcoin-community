@@ -24,6 +24,8 @@ export interface AdminConfig {
     maxStreakBonus: number;
   };
   adminPubkeys: string[];
+  whitelistedDomains: string[];
+  communityPubkeys: string[];
   maintenanceMode: boolean;
   gameVisibility: {
     satoshiStacker: boolean;
@@ -81,6 +83,8 @@ function parseConfig(raw: RawConfig): AdminConfig {
       maxStreakBonus: parseNumber(raw.maxStreakBonus, 500),
     },
     adminPubkeys: parseArray(raw.adminPubkeys),
+    whitelistedDomains: parseArray(raw.whitelistedDomains),
+    communityPubkeys: parseArray(raw.communityPubkeys),
     maintenanceMode: parseBoolean(raw.maintenanceMode, false),
     gameVisibility: {
       satoshiStacker: parseBoolean(raw.satoshiStacker, true),
@@ -222,6 +226,12 @@ export function useAdminConfig() {
       }
       if (updates.adminPubkeys !== undefined) {
         flatUpdates.adminPubkeys = updates.adminPubkeys;
+      }
+      if (updates.whitelistedDomains !== undefined) {
+        flatUpdates.whitelistedDomains = updates.whitelistedDomains;
+      }
+      if (updates.communityPubkeys !== undefined) {
+        flatUpdates.communityPubkeys = updates.communityPubkeys;
       }
       if (updates.pullPaymentId !== undefined) {
         flatUpdates.pullPaymentId = updates.pullPaymentId;

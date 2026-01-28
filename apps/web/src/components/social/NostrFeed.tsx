@@ -1,8 +1,8 @@
-import { memo } from "react";
+import { memo, useRef, useEffect } from "react";
 import type { NostrEvent } from "@nostrify/nostrify";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageSquare, RefreshCw } from "lucide-react";
+import { MessageSquare, RefreshCw, Loader2 } from "lucide-react";
 import { useNostrFeed } from "@/hooks/useNostrFeed";
 import { useAuthor } from "@/hooks/useAuthor";
 import { genUserName } from "@/lib/genUserName";
@@ -50,7 +50,23 @@ const PostItem = memo(function PostItem({ event }: PostItemProps) {
 });
 
 export const NostrFeed = memo(function NostrFeed() {
-  const { posts, isLoading, isError, refetch } = useNostrFeed({ limit: 20 });
+  const { posts, isLoading, isError, refetch, loadMore, hasMore, isLoadingMore } = useNostrFeed({ limit: 50 });
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      if (scrollHeight - scrollTop - clientHeight < 200 && hasMore && !isLoadingMore) {
+        loadMore();
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [hasMore, isLoadingMore, loadMore]);
 
   return (
     <Card className="w-full">
@@ -81,13 +97,31 @@ export const NostrFeed = memo(function NostrFeed() {
           </div>
         ) : posts.length === 0 ? (
           <div className="p-6 text-center">
-            <p className="text-muted-foreground">No posts yet</p>
+            <p className="text-muted-foreground">No community posts found</p>
+            {hasMore && (
+              <Button variant="outline" size="sm" className="mt-2" onClick={loadMore} disabled={isLoadingMore}>
+                {isLoadingMore ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Search older posts
+              </Button>
+            )}
           </div>
         ) : (
-          <div className="max-h-96 overflow-y-auto">
+          <div ref={scrollRef} className="max-h-[600px] overflow-y-auto">
             {posts.map((post) => (
               <PostItem key={post.id} event={post} />
             ))}
+            {isLoadingMore && (
+              <div className="p-4 text-center">
+                <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
+              </div>
+            )}
+            {hasMore && !isLoadingMore && (
+              <div className="p-4 text-center">
+                <Button variant="ghost" size="sm" onClick={loadMore}>
+                  Load more
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
