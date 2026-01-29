@@ -24,6 +24,7 @@ export function LoginButton({ className, onLogin }: LoginButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [nsec, setNsec] = useState("");
+  const [nsecError, setNsecError] = useState("");
   const [bunkerUri, setBunkerUri] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const login = useLoginActions();
@@ -47,6 +48,7 @@ export function LoginButton({ className, onLogin }: LoginButtonProps) {
   const handleKeyLogin = () => {
     if (!nsec.trim()) return;
     setIsLoading(true);
+    setNsecError("");
 
     try {
       login.nsec(nsec);
@@ -54,6 +56,7 @@ export function LoginButton({ className, onLogin }: LoginButtonProps) {
       setIsOpen(false);
     } catch (error) {
       console.error("Nsec login failed:", error);
+      setNsecError("Invalid NSEC format. Please check for typos or try copying it again.");
     } finally {
       setIsLoading(false);
     }
@@ -153,10 +156,18 @@ export function LoginButton({ className, onLogin }: LoginButtonProps) {
                     <Input
                       id="nsec"
                       value={nsec}
-                      onChange={(e) => setNsec(e.target.value)}
+                      onChange={(e) => {
+                        setNsec(e.target.value);
+                        setNsecError("");
+                      }}
                       className="rounded-lg border-gray-300 dark:border-gray-700 focus-visible:ring-primary"
                       placeholder="nsec1..."
                     />
+                    {nsecError && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {nsecError}
+                      </p>
+                    )}
                   </div>
 
                   <div className="text-center">
