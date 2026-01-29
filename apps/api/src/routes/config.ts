@@ -27,7 +27,6 @@ const VALID_CONFIG_KEYS = new Set([
   'adminPubkeys',
   'requireApprovalAbove',
   'maintenanceMode',
-  'satoshiStacker',
   'pullPaymentId',
   'btcPayServerUrl',
   'btcPayStoreId',
@@ -53,7 +52,6 @@ const DEFAULT_CONFIG: Record<string, string> = {
   adminPubkeys: '[]',
   requireApprovalAbove: '0',
   maintenanceMode: 'false',
-  satoshiStacker: 'true',
   pullPaymentId: '',
   btcPayServerUrl: '',
   btcPayStoreId: '',
@@ -155,7 +153,6 @@ configRoute.post(
 
 configRoute.post('/discover-pubkeys', requireAuth, requireAdmin, async (c) => {
   try {
-    // Get whitelisted domains from DB
     const domainsRow = await db
       .select()
       .from(config)
@@ -171,7 +168,6 @@ configRoute.post('/discover-pubkeys', requireAuth, requireAdmin, async (c) => {
       }
     }
 
-    // Get existing community pubkeys
     const pubkeysRow = await db
       .select()
       .from(config)
@@ -190,72 +186,61 @@ configRoute.post('/discover-pubkeys', requireAuth, requireAdmin, async (c) => {
     const discoveredPubkeys = new Set(existingPubkeys);
     const domainResults: Record<string, { found: number; pubkeys: string[] } | { error: string }> = {};
 
-    // Fetch NIP-05 data from each domain
+    // Search NIP-50 relay for kind 0 profiles matching each domain
+    const { WebSocket } = await import('ws');
+    const SEARCH_RELAYS = ['wss://search.nos.today', 'wss://relay.nostr.band'];
+
     for (const domain of domains) {
-      try {
-        let response: Response | null = null;
-        let data: any = null;
+      const domainPubkeys: string[] = [];
 
-        // Try without query param first
+      const searchRelay = (relayUrl: string): Promise<void> => {
+        return new Promise((resolve) => {
+          const ws = new WebSocket(relayUrl);
+          const timeout = setTimeout(() => { ws.close(); resolve(); }, 10000);
+
+          ws.on('open', () => {
+            ws.send(JSON.stringify(['REQ', 'discover', { kinds: [0], search: domain, limit: 200 }]));
+          });
+
+          ws.on('message', (data: Buffer) => {
+            try {
+              const msg = JSON.parse(data.toString());
+              if (msg[0] === 'EVENT' && msg[2]) {
+                const content = JSON.parse(msg[2].content || '{}');
+                const nip05 = (content.nip05 || '').toLowerCase();
+                if (nip05.endsWith(`@${domain}`)) {
+                  const pubkey = msg[2].pubkey;
+                  if (typeof pubkey === 'string' && pubkey.length === 64 && !discoveredPubkeys.has(pubkey)) {
+                    domainPubkeys.push(pubkey);
+                    discoveredPubkeys.add(pubkey);
+                  }
+                }
+              }
+              if (msg[0] === 'EOSE') {
+                clearTimeout(timeout);
+                ws.close();
+                resolve();
+              }
+            } catch {}
+          });
+
+          ws.on('error', () => { clearTimeout(timeout); resolve(); });
+          ws.on('close', () => { clearTimeout(timeout); resolve(); });
+        });
+      };
+
+      for (const relayUrl of SEARCH_RELAYS) {
         try {
-          response = await Promise.race([
-            fetch(`https://${domain}/.well-known/nostr.json`),
-            new Promise<Response>((_, reject) =>
-              setTimeout(() => reject(new Error('Timeout')), 5000)
-            ),
-          ]);
-
-          if (response.ok) {
-            data = await response.json();
-          }
+          await searchRelay(relayUrl);
+          if (domainPubkeys.length > 0) break;
         } catch {
-          // First attempt threw (timeout, network error, etc.)
-        }
-
-        // If first attempt failed or returned no names, try with ?name=_ query param
-        if (!data || !data.names) {
-          try {
-            response = await Promise.race([
-              fetch(`https://${domain}/.well-known/nostr.json?name=_`),
-              new Promise<Response>((_, reject) =>
-                setTimeout(() => reject(new Error('Timeout')), 5000)
-              ),
-            ]);
-
-            if (response.ok) {
-              data = await response.json();
-            }
-          } catch {
-            // Both attempts failed
-          }
-        }
-
-        if (!data && !response?.ok) {
-          domainResults[domain] = { error: 'Failed to fetch NIP-05 data' };
           continue;
         }
-
-        // Extract pubkeys from names object
-        if (data && typeof data === 'object' && data.names && typeof data.names === 'object') {
-          const pubkeys: string[] = [];
-          for (const pubkey of Object.values(data.names)) {
-            if (typeof pubkey === 'string' && pubkey.length === 64) {
-              pubkeys.push(pubkey);
-              discoveredPubkeys.add(pubkey);
-            }
-          }
-          domainResults[domain] = { found: pubkeys.length, pubkeys };
-        } else {
-          domainResults[domain] = { found: 0, pubkeys: [] };
-        }
-      } catch (error) {
-        domainResults[domain] = {
-          error: error instanceof Error ? error.message : 'Unknown error',
-        };
       }
+
+      domainResults[domain] = { found: domainPubkeys.length, pubkeys: domainPubkeys };
     }
 
-    // Save merged pubkeys back to DB
     const mergedPubkeys = Array.from(discoveredPubkeys);
     const stringValue = JSON.stringify(mergedPubkeys);
 

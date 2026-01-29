@@ -2,12 +2,22 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { db } from '../db';
-import { users, balances, payouts, referrals } from '../db/schema';
+import { referrals, achievementDefinitions } from '../db/schema';
 import { requireAuth } from '../middleware/auth';
-import { randomUUID } from 'node:crypto';
 import { eq, and } from 'drizzle-orm';
+import { creditReward } from '../services/rewards';
 
 export const achievementsRoute = new Hono();
+
+achievementsRoute.get('/definitions', async (c) => {
+  const definitions = await db
+    .select()
+    .from(achievementDefinitions)
+    .where(eq(achievementDefinitions.active, true))
+    .all();
+
+  return c.json(definitions);
+});
 
 achievementsRoute.get('/', requireAuth, async (c) => {
   const pubkey = c.get('pubkey');
@@ -50,13 +60,10 @@ achievementsRoute.post(
     }
 
     const gamePayouts = await db.query.payouts.findFirst({
-      where: (payouts, { eq, and, or }) =>
+      where: (payouts, { eq, and }) =>
         and(
           eq(payouts.userId, refereePubkey),
-          or(
-            eq(payouts.gameType, 'trivia'),
-            eq(payouts.gameType, 'stacker')
-          ),
+          eq(payouts.gameType, 'trivia'),
           eq(payouts.status, 'paid')
         ),
     });
@@ -69,51 +76,7 @@ achievementsRoute.post(
 
     const bonusAmount = 100;
 
-    let referrerBalance = await db.query.balances.findFirst({
-      where: (balances, { eq }) => eq(balances.userId, referrerId),
-    });
-
-    if (!referrerBalance) {
-      const referrerUser = await db.query.users.findFirst({
-        where: (users, { eq }) => eq(users.pubkey, referrerId),
-      });
-
-      if (!referrerUser) {
-        await db.insert(users).values({ pubkey: referrerId });
-      }
-
-      await db.insert(balances).values({
-        userId: referrerId,
-        balance: 0,
-        pending: 0,
-        totalEarned: 0,
-        totalWithdrawn: 0,
-      });
-
-      referrerBalance = await db.query.balances.findFirst({
-        where: (balances, { eq }) => eq(balances.userId, referrerId),
-      });
-    }
-
-    const payoutId = randomUUID();
-    const now = new Date().toISOString();
-
-    await db.insert(payouts).values({
-      id: payoutId,
-      userId: referrerId,
-      amount: bonusAmount,
-      gameType: 'referral',
-      status: 'paid',
-      timestamp: now,
-    });
-
-    await db.update(balances)
-      .set({
-        balance: referrerBalance!.balance + bonusAmount,
-        totalEarned: referrerBalance!.totalEarned + bonusAmount,
-        lastActivity: now,
-      })
-      .where(eq(balances.userId, referrerId));
+    await creditReward(referrerId, bonusAmount, 'referral');
 
     if (!referral) {
       await db.insert(referrals).values({

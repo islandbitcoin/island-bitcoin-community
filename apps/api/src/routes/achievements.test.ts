@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Hono } from 'hono';
 import { achievementsRoute } from './achievements';
 import { db } from '../db';
-import { users, balances, payouts, achievements, referrals } from '../db/schema';
+import { users, balances, payouts, achievements, referrals, achievementDefinitions } from '../db/schema';
 import { verifyEvent } from '@island-bitcoin/nostr';
 import type { Event } from 'nostr-tools';
 
@@ -340,7 +340,7 @@ describe('POST /api/referral/check', () => {
       expect(body.amount).toBe(100);
     });
 
-    it('should award bonus when referee has one stacker payout', async () => {
+    it('should not award bonus for stacker-only payouts', async () => {
       const now = new Date().toISOString();
       await db.insert(payouts).values({
         id: 'payout_1',
@@ -349,14 +349,6 @@ describe('POST /api/referral/check', () => {
         gameType: 'stacker',
         status: 'paid',
         timestamp: now,
-      });
-
-      await db.insert(balances).values({
-        userId: referrerPubkey,
-        balance: 0,
-        pending: 0,
-        totalEarned: 0,
-        totalWithdrawn: 0,
       });
 
       const res = await app.request('http://localhost/api/achievements/referral/check', {
@@ -370,8 +362,7 @@ describe('POST /api/referral/check', () => {
 
       expect(res.status).toBe(200);
       const body = await res.json();
-      expect(body.bonusPaid).toBe(true);
-      expect(body.amount).toBe(100);
+      expect(body.bonusPaid).toBe(false);
     });
 
     it('should not count non-game payouts', async () => {
@@ -644,5 +635,51 @@ describe('POST /api/referral/check', () => {
       expect(referrerBalance?.balance).toBe(100);
       expect(referrerBalance?.totalEarned).toBe(100);
     });
+  });
+});
+
+describe('GET /api/achievements/definitions', () => {
+  let app: Hono;
+
+  beforeEach(async () => {
+    await db.delete(achievementDefinitions);
+
+    app = new Hono();
+    app.route('/api/achievements', achievementsRoute);
+  });
+
+  it('should return definitions without auth', async () => {
+    await db.insert(achievementDefinitions).values([
+      { type: 'first_correct', name: 'First Correct', description: 'Answer first question correctly', criteria: { event: 'trivia:correct', condition: { field: 'streak', operator: 'gte', value: 1 } }, reward: 0 },
+      { type: 'streak_5', name: '5 Streak', description: 'Get 5 correct in a row', criteria: { event: 'trivia:correct', condition: { field: 'streak', operator: 'gte', value: 5 } }, reward: 0 },
+    ]);
+
+    const res = await app.request('http://localhost/api/achievements/definitions');
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body).toHaveLength(2);
+    expect(body[0]).toHaveProperty('type');
+    expect(body[0]).toHaveProperty('name');
+    expect(body[0]).toHaveProperty('criteria');
+  });
+
+  it('should only return active definitions', async () => {
+    await db.insert(achievementDefinitions).values([
+      { type: 'active_one', name: 'Active', description: 'Active', criteria: { event: 'trivia:correct', condition: { field: 'streak', operator: 'gte', value: 1 } }, reward: 0, active: true },
+      { type: 'inactive_one', name: 'Inactive', description: 'Inactive', criteria: { event: 'trivia:correct', condition: { field: 'streak', operator: 'gte', value: 1 } }, reward: 0, active: false },
+    ]);
+
+    const res = await app.request('http://localhost/api/achievements/definitions');
+    const body = await res.json();
+
+    expect(body).toHaveLength(1);
+    expect(body[0].type).toBe('active_one');
+  });
+
+  it('should return empty array when no definitions exist', async () => {
+    const res = await app.request('http://localhost/api/achievements/definitions');
+    const body = await res.json();
+    expect(body).toEqual([]);
   });
 });
