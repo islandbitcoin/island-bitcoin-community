@@ -7,7 +7,7 @@ export function useLoginActions() {
 
   return {
     nsec(nsec: string): void {
-      const login = NLogin.fromNsec(nsec);
+      const login = NLogin.fromNsec(nsec.trim());
       addLogin(login);
     },
 
