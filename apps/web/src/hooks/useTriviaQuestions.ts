@@ -10,22 +10,6 @@ function buildNip98Url(apiPath: string): string {
     : `${window.location.origin}${apiPath}`;
 }
 
-/**
- * Safely get signer from user object, handling browser extension errors.
- * For extension logins, accessing user.signer may throw "Browser extension not available".
- * This function catches that error and falls back to window.nostr.
- */
-function getSafeSignerForUser(user?: { pubkey: string; signer?: any }): any {
-  if (!user) return undefined;
-  try {
-    return user.signer || (window.nostr as any);
-  } catch {
-    // If accessing user.signer throws (e.g., browser extension not available),
-    // fall back to window.nostr directly
-    return window.nostr as any;
-  }
-}
-
 export interface TriviaQuestion {
   id: number;
   question: string;
@@ -78,7 +62,7 @@ async function startSession(level: number, user?: { pubkey: string; signer?: any
 
   if (user?.pubkey) {
     const nip98Url = buildNip98Url(apiPath);
-    const signer = getSafeSignerForUser(user);
+    const signer = user?.signer || (window.nostr as any);
     const authHeader = await createNIP98AuthHeader(nip98Url, "POST", signer);
     headers.Authorization = authHeader;
   }
@@ -90,10 +74,12 @@ async function startSession(level: number, user?: { pubkey: string; signer?: any
   });
 
   if (!response.ok) {
+    if (response.status === 429) {
+      throw new TriviaApiError("Rate limited. Please slow down.", 429);
+    }
+    const body = await response.json().catch(() => ({}));
     throw new TriviaApiError(
-      response.status === 429
-        ? "Rate limited. Please slow down."
-        : "Failed to start session",
+      body.error || "Failed to start session",
       response.status
     );
   }
@@ -115,7 +101,7 @@ async function submitAnswer(
 
   if (user?.pubkey) {
     const nip98Url = buildNip98Url(apiPath);
-    const signer = getSafeSignerForUser(user);
+    const signer = user?.signer || (window.nostr as any);
     const authHeader = await createNIP98AuthHeader(nip98Url, "POST", signer);
     headers.Authorization = authHeader;
   }
@@ -144,7 +130,7 @@ async function fetchProgress(user?: { pubkey: string; signer?: any }): Promise<T
   const apiPath = `${API_BASE}/trivia/progress`;
   const nip98Url = buildNip98Url(apiPath);
   
-  const signer = getSafeSignerForUser(user);
+  const signer = user?.signer || (window.nostr as any);
   const authHeader = await createNIP98AuthHeader(nip98Url, "GET", signer);
 
   const response = await fetch(apiPath, {
