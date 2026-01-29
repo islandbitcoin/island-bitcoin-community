@@ -53,17 +53,22 @@ export class TriviaApiError extends Error {
   }
 }
 
-async function startSession(level: number): Promise<TriviaSession> {
+async function startSession(level: number, user?: { pubkey: string; signer: any }): Promise<TriviaSession> {
   const apiPath = `${API_BASE}/trivia/session/start`;
-  const nip98Url = buildNip98Url(apiPath);
-  const authHeader = await createNIP98AuthHeader(nip98Url, "POST");
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (user?.pubkey && user?.signer) {
+    const nip98Url = buildNip98Url(apiPath);
+    const authHeader = await createNIP98AuthHeader(nip98Url, "POST", user.signer);
+    headers.Authorization = authHeader;
+  }
 
   const response = await fetch(apiPath, {
     method: "POST",
-    headers: {
-      Authorization: authHeader,
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify({ level }),
   });
 
@@ -82,18 +87,24 @@ async function startSession(level: number): Promise<TriviaSession> {
 async function submitAnswer(
   sessionId: string,
   questionId: number,
-  answer: number
+  answer: number,
+  user?: { pubkey: string; signer: any }
 ): Promise<TriviaAnswerResponse> {
   const apiPath = `${API_BASE}/trivia/session/answer`;
-  const nip98Url = buildNip98Url(apiPath);
-  const authHeader = await createNIP98AuthHeader(nip98Url, "POST");
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (user?.pubkey && user?.signer) {
+    const nip98Url = buildNip98Url(apiPath);
+    const authHeader = await createNIP98AuthHeader(nip98Url, "POST", user.signer);
+    headers.Authorization = authHeader;
+  }
 
   const response = await fetch(apiPath, {
     method: "POST",
-    headers: {
-      Authorization: authHeader,
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify({ sessionId, questionId, answer }),
   });
 
@@ -111,10 +122,10 @@ async function submitAnswer(
   return response.json();
 }
 
-async function fetchProgress(): Promise<TriviaProgress> {
+async function fetchProgress(signer: any): Promise<TriviaProgress> {
   const apiPath = `${API_BASE}/trivia/progress`;
   const nip98Url = buildNip98Url(apiPath);
-  const authHeader = await createNIP98AuthHeader(nip98Url, "GET");
+  const authHeader = await createNIP98AuthHeader(nip98Url, "GET", signer);
 
   const response = await fetch(apiPath, {
     headers: { Authorization: authHeader },
@@ -132,11 +143,10 @@ export function useStartSession() {
   const queryClient = useQueryClient();
 
   const start = async (level: number): Promise<TriviaSession> => {
-    if (!user?.pubkey) {
-      throw new Error("User not authenticated");
+    const session = await startSession(level, user || undefined);
+    if (user?.pubkey) {
+      queryClient.invalidateQueries({ queryKey: ["trivia-progress"] });
     }
-    const session = await startSession(level);
-    queryClient.invalidateQueries({ queryKey: ["trivia-progress"] });
     return session;
   };
 
@@ -152,14 +162,12 @@ export function useSubmitAnswer() {
     questionId: number,
     answer: number
   ): Promise<TriviaAnswerResponse> => {
-    if (!user?.pubkey) {
-      throw new Error("User not authenticated");
+    const result = await submitAnswer(sessionId, questionId, answer, user || undefined);
+
+    if (user?.pubkey) {
+      queryClient.invalidateQueries({ queryKey: ["trivia-progress"] });
+      queryClient.invalidateQueries({ queryKey: ["wallet-balance"] });
     }
-
-    const result = await submitAnswer(sessionId, questionId, answer);
-
-    queryClient.invalidateQueries({ queryKey: ["trivia-progress"] });
-    queryClient.invalidateQueries({ queryKey: ["wallet-balance"] });
 
     return result;
   };
@@ -172,8 +180,8 @@ export function useTriviaProgress() {
 
   return useQuery({
     queryKey: ["trivia-progress", user?.pubkey],
-    queryFn: () => fetchProgress(),
-    enabled: !!user?.pubkey,
+    queryFn: () => fetchProgress(user?.signer),
+    enabled: !!user?.pubkey && !!user?.signer,
     staleTime: 30 * 1000,
   });
 }
