@@ -244,40 +244,48 @@ export default function Index() {
           </div>
         </section>
 
-        <section className="py-12 sm:py-16">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-8 sm:mb-12">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-foreground">
-                Bitcoin Trivia
-              </h2>
-              <p className="text-base sm:text-lg text-muted-foreground px-4 sm:px-0">
-                Test your knowledge and earn sats!
-              </p>
+        {import.meta.env.VITE_FEATURE_TRIVIA_GAME === 'true' && (
+          <section className="py-12 sm:py-16">
+            <div className="container mx-auto px-4">
+              <div className="text-center mb-8 sm:mb-12">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-foreground">
+                  Bitcoin Trivia
+                </h2>
+                <p className="text-base sm:text-lg text-muted-foreground px-4 sm:px-0">
+                  Test your knowledge and earn sats!
+                </p>
+              </div>
+              <div className="max-w-2xl mx-auto">
+                <BitcoinTrivia />
+              </div>
             </div>
-            <div className="max-w-2xl mx-auto">
-              <BitcoinTrivia />
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        <section className="py-12 sm:py-16 bg-card/50">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-              <div>
-                <h2 className="text-2xl font-bold mb-4 text-foreground">
-                  Leaderboard
-                </h2>
-                <Leaderboard />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold mb-4 text-foreground">
-                  Community Feed
-                </h2>
-                <NostrFeed />
+        {(import.meta.env.VITE_FEATURE_LEADERBOARD === 'true' || import.meta.env.VITE_FEATURE_COMMUNITY_FEED === 'true') && (
+          <section className="py-12 sm:py-16 bg-card/50">
+            <div className="container mx-auto px-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                {import.meta.env.VITE_FEATURE_LEADERBOARD === 'true' && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-4 text-foreground">
+                      Leaderboard
+                    </h2>
+                    <Leaderboard />
+                  </div>
+                )}
+                {import.meta.env.VITE_FEATURE_COMMUNITY_FEED === 'true' && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-4 text-foreground">
+                      Community Feed
+                    </h2>
+                    <NostrFeed />
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         <footer
           role="contentinfo"
