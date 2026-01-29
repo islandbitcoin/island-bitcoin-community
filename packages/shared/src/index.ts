@@ -11,8 +11,12 @@ export {
 // Trivia schemas
 export {
   triviaQuestionSchema,
+  triviaSessionSchema,
+  triviaAnswerResponseSchema,
   triviaProgressSchema,
   type TriviaQuestion,
+  type TriviaSession,
+  type TriviaAnswerResponse,
   type TriviaProgress,
 } from './schemas/trivia';
 

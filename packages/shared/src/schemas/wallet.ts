@@ -34,9 +34,7 @@ export const gameWalletConfigSchema = z.object({
   maintenanceMode: z.boolean(),
 
   // Game Visibility Settings
-  gameVisibility: z.object({
-    satoshiStacker: z.boolean(),
-  }),
+  gameVisibility: z.object({}),
 
   // Pull Payment Settings (simplified BTCPay integration)
   pullPaymentId: z.string().optional(),
