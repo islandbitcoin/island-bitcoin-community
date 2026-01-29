@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { db } from '../db';
 import { users, triviaProgress, triviaSessions } from '../db/schema';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth, optionalAuth } from '../middleware/auth';
 import { createRateLimiter } from '../middleware/rate-limit';
 import { creditReward } from '../services/rewards';
 import { gameEventBus } from '../services/event-bus';
@@ -23,8 +23,28 @@ export const triviaRoute = new Hono();
 const SESSION_EXPIRY_MINUTES = 15;
 const ANSWER_DELAY_MS = 3000;
 
-const startRateLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, maxRequests: 10 });
-const answerRateLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, maxRequests: 60 });
+const startRateLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  maxRequests: 30,
+  keyExtractor: (c) => {
+    const pubkey = c.get('pubkey');
+    if (pubkey) return pubkey;
+    return c.req.header('X-Forwarded-For')?.split(',')[0]?.trim()
+      || c.req.header('CF-Connecting-IP')
+      || 'unknown-guest';
+  },
+});
+const answerRateLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  maxRequests: 120,
+  keyExtractor: (c) => {
+    const pubkey = c.get('pubkey');
+    if (pubkey) return pubkey;
+    return c.req.header('X-Forwarded-For')?.split(',')[0]?.trim()
+      || c.req.header('CF-Connecting-IP')
+      || 'unknown-guest';
+  },
+});
 
 const startSessionSchema = z.object({
   level: z.number().int().min(1).max(MAX_LEVEL),
@@ -66,46 +86,70 @@ async function getOrCreateProgress(pubkey: string) {
 // POST /session/start
 triviaRoute.post(
   '/session/start',
-  requireAuth,
+  optionalAuth,
   startRateLimiter,
   zValidator('json', startSessionSchema),
   async (c) => {
-    const pubkey = c.get('pubkey');
+    const pubkey = c.get('pubkey') || 'guest';
+    const isGuest = pubkey === 'guest';
     const { level } = c.req.valid('json');
 
-    const progress = await getOrCreateProgress(pubkey);
-
-    if (level > progress.level) {
-      throw new HTTPException(400, { message: 'Level not unlocked' });
+    // For guests: only allow level 1
+    if (isGuest && level !== 1) {
+      throw new HTTPException(400, { message: 'Guests can only play level 1' });
     }
 
-    // Check for existing active session
-    const existingSession = await db.query.triviaSessions.findFirst({
-      where: (ts, { eq, and }) => and(eq(ts.userId, pubkey), eq(ts.status, 'active')),
-    });
+    // Ensure user exists in database (for foreign key constraint)
+    if (isGuest) {
+      await db.insert(users).values({ pubkey }).onConflictDoNothing();
+    }
 
-    if (existingSession) {
-      if (isExpired(existingSession.expiresAt)) {
-        await db.update(triviaSessions)
-          .set({ status: 'expired' })
-          .where(eq(triviaSessions.id, existingSession.id));
-      } else {
-        throw new HTTPException(400, { message: 'Session already active' });
+    // For authenticated users: check progress
+    if (!isGuest) {
+      const progress = await getOrCreateProgress(pubkey);
+      if (level > progress.level) {
+        throw new HTTPException(400, { message: 'Level not unlocked' });
+      }
+
+      // Check for existing active session
+      const existingSession = await db.query.triviaSessions.findFirst({
+        where: (ts, { eq, and }) => and(eq(ts.userId, pubkey), eq(ts.status, 'active')),
+      });
+
+      if (existingSession) {
+        if (isExpired(existingSession.expiresAt)) {
+          await db.update(triviaSessions)
+            .set({ status: 'expired' })
+            .where(eq(triviaSessions.id, existingSession.id));
+        } else {
+          throw new HTTPException(400, { message: 'Session already active' });
+        }
       }
     }
 
-    // Get questions user hasn't answered correctly yet for this level
+    // Get questions for this level
     const allLevelQuestions = await getQuestionsForLevel(level);
-    const answeredIds: number[] = progress.questionsAnswered || [];
-    const unanswered = allLevelQuestions.filter(q => !answeredIds.includes(q.id));
-
-    if (unanswered.length === 0) {
-      throw new HTTPException(400, { message: 'Level already completed' });
+    if (allLevelQuestions.length === 0) {
+      throw new HTTPException(400, { message: 'No questions available for this level' });
     }
 
-    // Shuffle and take up to QUESTIONS_PER_LEVEL
-    const shuffled = unanswered.sort(() => Math.random() - 0.5);
-    const selectedQuestions = shuffled.slice(0, QUESTIONS_PER_LEVEL);
+    // For authenticated users: filter out already answered questions
+    let selectedQuestions = allLevelQuestions;
+    if (!isGuest) {
+      const progress = await getOrCreateProgress(pubkey);
+      const answeredIds: number[] = progress.questionsAnswered || [];
+      const unanswered = allLevelQuestions.filter(q => !answeredIds.includes(q.id));
+
+      if (unanswered.length === 0) {
+        throw new HTTPException(400, { message: 'Level already completed' });
+      }
+
+      // Shuffle and take up to QUESTIONS_PER_LEVEL
+      selectedQuestions = unanswered.sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_LEVEL);
+    } else {
+      // For guests: shuffle and take up to QUESTIONS_PER_LEVEL
+      selectedQuestions = allLevelQuestions.sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_LEVEL);
+    }
 
     const sessionId = randomUUID();
     const now = new Date();
@@ -134,11 +178,12 @@ triviaRoute.post(
 // POST /session/answer
 triviaRoute.post(
   '/session/answer',
-  requireAuth,
+  optionalAuth,
   answerRateLimiter,
   zValidator('json', answerSchema),
   async (c) => {
-    const pubkey = c.get('pubkey');
+    const pubkey = c.get('pubkey') || 'guest';
+    const isGuest = pubkey === 'guest';
     const { sessionId, questionId, answer } = c.req.valid('json');
 
     const session = await db.query.triviaSessions.findFirst({
@@ -190,75 +235,83 @@ triviaRoute.post(
     }
 
     const isCorrect = question.correctAnswer === answer;
-    const progress = await getOrCreateProgress(pubkey);
 
     let satsEarned = 0;
-    let newStreak = progress.streak;
-    let newBestStreak = progress.bestStreak;
-    let newCorrect = progress.correct;
-    let newSatsEarned = progress.satsEarned;
+    let newStreak = 0;
+    let newBestStreak = 0;
+    let newCorrect = 0;
+    let newSatsEarned = 0;
     let levelUnlocked = false;
-    const answeredIds: number[] = [...(progress.questionsAnswered || [])];
+    let progress = null;
 
-    if (isCorrect) {
-      satsEarned = SAT_REWARDS[question.difficulty];
-      newStreak = progress.streak + 1;
-      newCorrect = progress.correct + 1;
-      newSatsEarned = progress.satsEarned + satsEarned;
-      if (newStreak > newBestStreak) {
-        newBestStreak = newStreak;
-      }
+    // Only update progress for authenticated users
+    if (!isGuest) {
+      progress = await getOrCreateProgress(pubkey);
+      newStreak = progress.streak;
+      newBestStreak = progress.bestStreak;
+      newCorrect = progress.correct;
+      newSatsEarned = progress.satsEarned;
 
-      // Only add to questionsAnswered if correct
-      if (!answeredIds.includes(questionId)) {
-        answeredIds.push(questionId);
-      }
+      if (isCorrect) {
+        satsEarned = SAT_REWARDS[question.difficulty];
+        newStreak = progress.streak + 1;
+        newCorrect = progress.correct + 1;
+        newSatsEarned = progress.satsEarned + satsEarned;
+        if (newStreak > newBestStreak) {
+          newBestStreak = newStreak;
+        }
 
-      // Credit reward (has own transaction)
-      await creditReward(pubkey, satsEarned, 'trivia');
+        const answeredIds: number[] = [...(progress.questionsAnswered || [])];
+        if (!answeredIds.includes(questionId)) {
+          answeredIds.push(questionId);
+        }
 
-      // Check level completion: all questions for this level answered correctly?
-      const allLevelQuestions = await getQuestionsForLevel(session.level);
-      const allLevelIds = allLevelQuestions.map(q => q.id);
-      const allAnswered = allLevelIds.every(id => answeredIds.includes(id));
+        // Credit reward (has own transaction)
+        await creditReward(pubkey, satsEarned, 'trivia');
 
-      if (allAnswered && session.level === progress.level) {
-        // Level completed — increment level
-        const newLevel = progress.level + 1;
-        levelUnlocked = true;
+        // Check level completion: all questions for this level answered correctly?
+        const allLevelQuestions = await getQuestionsForLevel(session.level);
+        const allLevelIds = allLevelQuestions.map(q => q.id);
+        const allAnswered = allLevelIds.every(id => answeredIds.includes(id));
 
-        await db.update(triviaProgress)
-          .set({
-            level: newLevel,
-            questionsAnswered: answeredIds,
-            correct: newCorrect,
-            streak: newStreak,
-            bestStreak: newBestStreak,
-            satsEarned: newSatsEarned,
-            lastPlayedDate: new Date().toISOString().split('T')[0],
-            levelCompleted: false,
-          })
-          .where(eq(triviaProgress.userId, pubkey));
+        if (allAnswered && session.level === progress.level) {
+          // Level completed — increment level
+          const newLevel = progress.level + 1;
+          levelUnlocked = true;
+
+          await db.update(triviaProgress)
+            .set({
+              level: newLevel,
+              questionsAnswered: answeredIds,
+              correct: newCorrect,
+              streak: newStreak,
+              bestStreak: newBestStreak,
+              satsEarned: newSatsEarned,
+              lastPlayedDate: new Date().toISOString().split('T')[0],
+              levelCompleted: false,
+            })
+            .where(eq(triviaProgress.userId, pubkey));
+        } else {
+          await db.update(triviaProgress)
+            .set({
+              questionsAnswered: answeredIds,
+              correct: newCorrect,
+              streak: newStreak,
+              bestStreak: newBestStreak,
+              satsEarned: newSatsEarned,
+              lastPlayedDate: new Date().toISOString().split('T')[0],
+            })
+            .where(eq(triviaProgress.userId, pubkey));
+        }
       } else {
+        newStreak = 0;
         await db.update(triviaProgress)
           .set({
-            questionsAnswered: answeredIds,
-            correct: newCorrect,
-            streak: newStreak,
-            bestStreak: newBestStreak,
-            satsEarned: newSatsEarned,
+            streak: 0,
             lastPlayedDate: new Date().toISOString().split('T')[0],
           })
           .where(eq(triviaProgress.userId, pubkey));
       }
-    } else {
-      newStreak = 0;
-      await db.update(triviaProgress)
-        .set({
-          streak: 0,
-          lastPlayedDate: new Date().toISOString().split('T')[0],
-        })
-        .where(eq(triviaProgress.userId, pubkey));
     }
 
     // Append answer to session
@@ -280,38 +333,40 @@ triviaRoute.post(
       .set(updateData)
       .where(eq(triviaSessions.id, sessionId));
 
-    // Emit events AFTER all DB writes
-    if (isCorrect) {
-      gameEventBus.emit('trivia:correct', {
-        pubkey,
-        questionId,
-        difficulty: question.difficulty,
-        streak: newStreak,
-        satsEarned,
-      });
-    } else {
-      gameEventBus.emit('trivia:wrong', {
-        pubkey,
-        questionId,
-        streak: newStreak,
-      });
-    }
+    // Emit events AFTER all DB writes (only for authenticated users)
+    if (!isGuest) {
+      if (isCorrect) {
+        gameEventBus.emit('trivia:correct', {
+          pubkey,
+          questionId,
+          difficulty: question.difficulty,
+          streak: newStreak,
+          satsEarned,
+        });
+      } else {
+        gameEventBus.emit('trivia:wrong', {
+          pubkey,
+          questionId,
+          streak: newStreak,
+        });
+      }
 
-    if (levelUnlocked) {
-      gameEventBus.emit('trivia:level-up', {
-        pubkey,
-        newLevel: progress.level + 1,
-      });
-    }
+      if (levelUnlocked && progress) {
+        gameEventBus.emit('trivia:level-up', {
+          pubkey,
+          newLevel: progress.level + 1,
+        });
+      }
 
-    if (sessionComplete) {
-      const correctCount = newAnswers.filter(a => a.correct).length;
-      gameEventBus.emit('trivia:session-complete', {
-        pubkey,
-        sessionId,
-        score: correctCount,
-        total: session.questionIds.length,
-      });
+      if (sessionComplete) {
+        const correctCount = newAnswers.filter(a => a.correct).length;
+        gameEventBus.emit('trivia:session-complete', {
+          pubkey,
+          sessionId,
+          score: correctCount,
+          total: session.questionIds.length,
+        });
+      }
     }
 
     return c.json({
