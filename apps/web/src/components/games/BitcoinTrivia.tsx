@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Brain, Zap, RefreshCw, CheckCircle, XCircle, AlertCircle, Menu, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGameWallet } from "@/hooks/useGameWallet";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import {
   useStartSession,
   useSubmitAnswer,
@@ -36,6 +37,7 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
   const { balance, refreshBalance } = useGameWallet();
+  const { user } = useCurrentUser();
   const { start } = useStartSession();
   const { submit } = useSubmitAnswer();
   const { data: progress, refetch: refetchProgress } = useTriviaProgress();
@@ -69,33 +71,47 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
 
   const startNewSession = useCallback(
     async (level: number) => {
-      setSessionError(null);
+      console.log('[BitcoinTrivia] Starting new session', { level, user: !!user, signer: !!user?.signer });
       setIsStartingSession(true);
+      setSessionError(null);
+      setSession(null);
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setShowResult(false);
+      setAnswerResult(null);
+
       try {
         const newSession = await start(level);
+        console.log('[BitcoinTrivia] Session started successfully', newSession);
         setSession(newSession);
-        setCurrentQuestionIndex(0);
-        setSelectedAnswer(null);
-        setShowResult(false);
-        setAnswerResult(null);
-      } catch (err) {
-        if (err instanceof TriviaApiError && err.status === 429) {
-          setSessionError("Slow down! Please wait before starting another session.");
-        } else {
-          setSessionError("Failed to start session. Please try again.");
-        }
+      } catch (error) {
+        console.error("[BitcoinTrivia] Failed to start trivia session:", error);
+        console.error("[BitcoinTrivia] Error details:", {
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          type: error?.constructor?.name
+        });
+        setSessionError(
+          error instanceof TriviaApiError
+            ? error.message
+            : "Failed to start session. Please try again."
+        );
       } finally {
         setIsStartingSession(false);
       }
     },
-    [start]
+    [start, user]
   );
 
   useEffect(() => {
+    // Wait for user state to be determined before auto-starting
+    // If user is defined (even if null), we know auth state is ready
+    if (user === undefined) return;
+    
     if (!session && !sessionError && !isStartingSession && currentLevel > 0) {
       startNewSession(currentLevel);
     }
-  }, [currentLevel]);
+  }, [user, session, sessionError, isStartingSession, currentLevel, startNewSession]);
 
   const handleAnswer = async (answerIndex: number) => {
     if (showResult || !currentQuestion || !session) return;
