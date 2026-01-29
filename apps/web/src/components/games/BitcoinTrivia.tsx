@@ -91,8 +91,8 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
            stack: error instanceof Error ? error.stack : undefined,
            type: error?.constructor?.name
          });
-         // Don't set error - let it fall through to "Session Complete" UI
-         setSessionError(null);
+         // Set error to prevent auto-retry loop, but UI will show "Session Complete"
+         setSessionError("failed");
        } finally {
         setIsStartingSession(false);
       }
