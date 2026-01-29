@@ -146,6 +146,57 @@ export async function requireAuth(c: Context, next: Next): Promise<void> {
 }
 
 /**
+ * Middleware: Optional Nostr authentication via NIP-98
+ * 
+ * Attempts to validate NIP-98 HTTP Auth event and sets pubkey in context if successful.
+ * Does NOT throw errors if authentication is missing or fails - just continues without setting pubkey.
+ * 
+ * This allows endpoints to work for both authenticated and guest users.
+ * 
+ * Usage:
+ * ```typescript
+ * app.post('/trivia/session/start', optionalAuth, (c) => {
+ *   const pubkey = c.get('pubkey') || 'guest';
+ *   // ... handle both authenticated and guest users
+ * });
+ * ```
+ */
+export async function optionalAuth(c: Context, next: Next): Promise<void> {
+  const authHeader = c.req.header('Authorization');
+  
+  // If no auth header, just continue (user is guest)
+  if (!authHeader) {
+    await next();
+    return;
+  }
+  
+  try {
+    // Extract event from header
+    const event = extractNIP98Event(authHeader);
+    
+    // Build full request URL from proxy headers
+    const proto = c.req.header('X-Forwarded-Proto') || 'http';
+    const host = c.req.header('X-Forwarded-Host') || c.req.header('Host') || new URL(c.req.url).host;
+    const url = new URL(c.req.url);
+    const path = url.pathname + url.search;
+    const requestUrl = `${proto}://${host}${path}`;
+    const requestMethod = c.req.method;
+    
+    // Validate event
+    validateNIP98Event(event, requestUrl, requestMethod);
+    
+    // Set pubkey in context for downstream handlers
+    c.set('pubkey', event.pubkey);
+  } catch (error) {
+    // Auth failed, but that's OK - just continue as guest
+    // Don't set pubkey, so downstream code will use 'guest'
+    console.log('[optionalAuth] Auth validation failed, continuing as guest:', error instanceof HTTPException ? error.message : 'Unknown error');
+  }
+  
+  await next();
+}
+
+/**
  * Middleware: Require admin privileges
  * 
  * Must be used after requireAuth middleware.
