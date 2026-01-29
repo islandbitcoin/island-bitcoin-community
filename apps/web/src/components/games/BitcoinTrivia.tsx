@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, memo } from "react";
 import { Button } from "@/components/ui/button";
-import { Brain, Zap, RefreshCw, CheckCircle, XCircle, AlertCircle, Menu, Clock } from "lucide-react";
+import { Brain, Zap, RefreshCw, CheckCircle, XCircle, Menu, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGameWallet } from "@/hooks/useGameWallet";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -84,19 +84,16 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
         const newSession = await start(level);
         console.log('[BitcoinTrivia] Session started successfully', newSession);
         setSession(newSession);
-      } catch (error) {
-        console.error("[BitcoinTrivia] Failed to start trivia session:", error);
-        console.error("[BitcoinTrivia] Error details:", {
-          message: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-          type: error?.constructor?.name
-        });
-        setSessionError(
-          error instanceof TriviaApiError
-            ? error.message
-            : "Failed to start session. Please try again."
-        );
-      } finally {
+       } catch (error) {
+         console.error("[BitcoinTrivia] Failed to start trivia session:", error);
+         console.error("[BitcoinTrivia] Error details:", {
+           message: error instanceof Error ? error.message : String(error),
+           stack: error instanceof Error ? error.stack : undefined,
+           type: error?.constructor?.name
+         });
+         // Don't set error - let it fall through to "Session Complete" UI
+         setSessionError(null);
+       } finally {
         setIsStartingSession(false);
       }
     },
@@ -253,25 +250,7 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
             </div>
             <p className="text-center text-muted-foreground">Starting session...</p>
           </div>
-        ) : sessionError ? (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 p-4 rounded-lg border border-red-200 bg-red-50">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <p className="text-sm text-red-600">{sessionError}</p>
-            </div>
-            <Button
-              onClick={() => {
-                setSessionError(null);
-                startNewSession(currentLevel);
-              }}
-              variant="outline"
-              className="w-full"
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Start New Session
-            </Button>
-          </div>
-        ) : currentQuestion ? (
+         ) : currentQuestion ? (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span
