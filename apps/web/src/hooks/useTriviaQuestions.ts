@@ -144,6 +144,29 @@ async function fetchProgress(user?: { pubkey: string; signer?: any }): Promise<T
   return response.json();
 }
 
+async function fetchCurrentSession(user?: { pubkey: string; signer?: any }): Promise<TriviaSession | null> {
+  if (!user?.pubkey) return null;
+  
+  const apiPath = `${API_BASE}/trivia/session/current`;
+  const nip98Url = buildNip98Url(apiPath);
+  const signer = user?.signer || (window.nostr as any);
+  const authHeader = await createNIP98AuthHeader(nip98Url, "GET", signer);
+
+  const response = await fetch(apiPath, {
+    headers: { Authorization: authHeader },
+  });
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new TriviaApiError("Failed to fetch current session", response.status);
+  }
+
+  return response.json();
+}
+
 export function useStartSession() {
   const { user } = useCurrentUser();
   const queryClient = useQueryClient();
@@ -189,5 +212,16 @@ export function useTriviaProgress() {
     queryFn: () => fetchProgress(user || undefined),
     enabled: !!user?.pubkey,
     staleTime: 30 * 1000,
+  });
+}
+
+export function useCurrentSession() {
+  const { user } = useCurrentUser();
+
+  return useQuery({
+    queryKey: ["trivia-current-session", user?.pubkey],
+    queryFn: () => fetchCurrentSession(user || undefined),
+    enabled: !!user?.pubkey,
+    staleTime: 5 * 1000,
   });
 }

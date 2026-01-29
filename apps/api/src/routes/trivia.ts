@@ -175,6 +175,44 @@ triviaRoute.post(
   }
 );
 
+// GET /session/current
+triviaRoute.get(
+  '/session/current',
+  requireAuth,
+  async (c) => {
+    const pubkey = c.get('pubkey')!;
+
+    const session = await db.query.triviaSessions.findFirst({
+      where: (ts, { eq, and }) => and(eq(ts.userId, pubkey), eq(ts.status, 'active')),
+    });
+
+    if (!session) {
+      return c.json({ session: null }, 404);
+    }
+
+    if (isExpired(session.expiresAt)) {
+      await db.update(triviaSessions)
+        .set({ status: 'expired' })
+        .where(eq(triviaSessions.id, session.id));
+      return c.json({ session: null }, 404);
+    }
+
+    const questions = await Promise.all(
+      session.questionIds.map(id => getQuestionById(id))
+    );
+    const sanitizedQuestions = questions
+      .filter((q): q is NonNullable<typeof q> => q !== undefined)
+      .map(({ correctAnswer, explanation, ...q }) => q);
+
+    return c.json({
+      sessionId: session.id,
+      questions: sanitizedQuestions,
+      level: session.level,
+      expiresAt: session.expiresAt,
+    });
+  }
+);
+
 // POST /session/answer
 triviaRoute.post(
   '/session/answer',

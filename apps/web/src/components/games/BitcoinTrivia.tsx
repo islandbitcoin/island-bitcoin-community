@@ -8,6 +8,7 @@ import {
   useStartSession,
   useSubmitAnswer,
   useTriviaProgress,
+  useCurrentSession,
   TriviaApiError,
   type TriviaQuestion,
   type TriviaSession,
@@ -41,6 +42,7 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
   const { start } = useStartSession();
   const { submit } = useSubmitAnswer();
   const { data: progress, refetch: refetchProgress } = useTriviaProgress();
+  const { data: currentSessionData } = useCurrentSession();
 
   const currentLevel = progress?.currentLevel ?? 1;
   const currentQuestion: TriviaQuestion | null =
@@ -99,6 +101,15 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
     },
     [start, user]
   );
+
+  // Restore session from server on page load
+  useEffect(() => {
+    if (currentSessionData && !session) {
+      console.log('[BitcoinTrivia] Restoring session from server', currentSessionData);
+      setSession(currentSessionData);
+      setCurrentQuestionIndex(0);
+    }
+  }, [currentSessionData, session]);
 
   useEffect(() => {
     // Wait for user state to be determined before auto-starting
