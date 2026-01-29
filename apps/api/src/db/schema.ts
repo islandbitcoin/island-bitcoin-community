@@ -86,7 +86,7 @@ export const triviaProgress = sqliteTable('trivia_progress', {
   questionsAnswered: text('questions_answered', { mode: 'json' })
     .notNull()
     .default(sql`'[]'`)
-    .$type<string[]>(),
+    .$type<number[]>(),
   correct: integer('correct').notNull().default(0),
   streak: integer('streak').notNull().default(0),
   bestStreak: integer('best_streak').notNull().default(0),
@@ -150,6 +150,57 @@ export const config = sqliteTable('config', {
   keyIdx: index('config_key_idx').on(table.key),
 }));
 
+/**
+ * Achievement Definitions Table
+ * Stores achievement templates with criteria and rewards
+ */
+export const achievementDefinitions = sqliteTable('achievement_definitions', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  type: text('type').notNull().unique(),
+  name: text('name').notNull(),
+  description: text('description').notNull(),
+  criteria: text('criteria', { mode: 'json' }).notNull().$type<{
+    event: string;
+    condition: { field: string; operator: 'gte' | 'eq'; value: number };
+  }>(),
+  reward: integer('reward').notNull().default(0),
+  icon: text('icon'),
+  active: integer('active', { mode: 'boolean' }).notNull().default(true),
+});
+
+/**
+ * Questions Table
+ * Stores trivia questions in the database
+ */
+export const questions = sqliteTable('questions', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  question: text('question').notNull(),
+  options: text('options', { mode: 'json' }).notNull().$type<string[]>(),
+  correctAnswer: integer('correct_answer').notNull(),
+  explanation: text('explanation').notNull(),
+  difficulty: text('difficulty', { enum: ['easy', 'medium', 'hard'] }).notNull(),
+  category: text('category', { enum: ['basics', 'technical', 'history', 'lightning', 'culture'] }).notNull(),
+  level: integer('level').notNull(),
+  active: integer('active', { mode: 'boolean' }).notNull().default(true),
+  createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
+});
+
+/**
+ * Trivia Sessions Table
+ * Tracks active trivia game sessions with questions and answers
+ */
+export const triviaSessions = sqliteTable('trivia_sessions', {
+  id: text('id').primaryKey(), // UUID
+  userId: text('user_id').notNull().references(() => users.pubkey, { onDelete: 'cascade' }),
+  level: integer('level').notNull(),
+  questionIds: text('question_ids', { mode: 'json' }).notNull().$type<number[]>(),
+  answers: text('answers', { mode: 'json' }).notNull().default(sql`'[]'`).$type<{ questionId: number; answer: number; correct: boolean; answeredAt: string }[]>(),
+  startedAt: text('started_at').notNull().default(sql`(datetime('now'))`),
+  expiresAt: text('expires_at').notNull(),
+  completedAt: text('completed_at'),
+  status: text('status', { enum: ['active', 'completed', 'expired'] }).notNull().default('active'),
+});
+
 // Type exports for use in application code
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -171,3 +222,12 @@ export type NewReferral = typeof referrals.$inferInsert;
 
 export type Config = typeof config.$inferSelect;
 export type NewConfig = typeof config.$inferInsert;
+
+export type Question = typeof questions.$inferSelect;
+export type NewQuestion = typeof questions.$inferInsert;
+
+export type AchievementDefinition = typeof achievementDefinitions.$inferSelect;
+export type NewAchievementDefinition = typeof achievementDefinitions.$inferInsert;
+
+export type TriviaSession = typeof triviaSessions.$inferSelect;
+export type NewTriviaSession = typeof triviaSessions.$inferInsert;
