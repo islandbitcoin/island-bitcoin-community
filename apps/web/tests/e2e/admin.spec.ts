@@ -22,7 +22,6 @@ const mockAdminConfig = {
   maxStreakBonus: "500",
   adminPubkeys: '["test-pubkey-123"]',
   maintenanceMode: "false",
-  satoshiStacker: "true",
   autoApprove: "false",
   autoApproveThreshold: "100",
 };

@@ -1,12 +1,15 @@
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { Button } from "@/components/ui/button";
-import { Brain, Zap, RefreshCw, CheckCircle, XCircle, AlertCircle, Menu } from "lucide-react";
+import { Brain, Zap, RefreshCw, CheckCircle, XCircle, AlertCircle, Menu, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGameWallet } from "@/hooks/useGameWallet";
 import {
-  useTriviaQuestions,
+  useStartSession,
   useSubmitAnswer,
+  useTriviaProgress,
+  TriviaApiError,
   type TriviaQuestion,
+  type TriviaSession,
 } from "@/hooks/useTriviaQuestions";
 import { LevelSelector } from "./LevelSelector";
 import {
@@ -17,186 +20,157 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-interface LocalProgress {
-  totalQuestionsAnswered: number;
-  correctAnswers: number;
-  currentStreak: number;
-  bestStreak: number;
-  answeredQuestions: string[];
-  satsEarned: number;
-  currentLevel: number;
-  levelCompleted: boolean;
-}
-
-const STORAGE_KEY = "bitcoinTriviaProgress";
-
-function getStoredProgress(): LocalProgress {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch {
-    // Ignore parse errors
-  }
-  return {
-    totalQuestionsAnswered: 0,
-    correctAnswers: 0,
-    currentStreak: 0,
-    bestStreak: 0,
-    answeredQuestions: [],
-    satsEarned: 0,
-    currentLevel: 1,
-    levelCompleted: false,
-  };
-}
-
-function saveProgress(progress: LocalProgress) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-}
-
 export const BitcoinTrivia = memo(function BitcoinTrivia() {
   const [showLevelSelector, setShowLevelSelector] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState<TriviaQuestion | null>(null);
+  const [session, setSession] = useState<TriviaSession | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [answerResult, setAnswerResult] = useState<{
     correct: boolean;
     satsEarned: number;
-    explanation?: string;
+    explanation: string;
   } | null>(null);
-  const [progress, setProgress] = useState<LocalProgress>(getStoredProgress);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+  const [isStartingSession, setIsStartingSession] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
   const { balance, refreshBalance } = useGameWallet();
+  const { start } = useStartSession();
   const { submit } = useSubmitAnswer();
-  const { data, isLoading, error, refetch } = useTriviaQuestions(progress.currentLevel);
+  const { data: progress, refetch: refetchProgress } = useTriviaProgress();
 
-  const questions = data?.questions || [];
-  const serverProgress = data?.progress;
+  const currentLevel = progress?.currentLevel ?? 1;
+  const currentQuestion: TriviaQuestion | null =
+    session?.questions[currentQuestionIndex] ?? null;
 
   useEffect(() => {
-    if (serverProgress) {
-      setProgress((prev) => ({
-        ...prev,
-        currentStreak: serverProgress.streak,
-        bestStreak: Math.max(prev.bestStreak, serverProgress.bestStreak),
-        satsEarned: serverProgress.satsEarned,
-      }));
+    if (!session?.expiresAt) {
+      setTimeRemaining(null);
+      return;
     }
-  }, [serverProgress]);
 
-  const getNextQuestion = () => {
-    const unanswered = questions.filter(
-      (q) => !progress.answeredQuestions.includes(q.id)
-    );
-    if (unanswered.length === 0) return null;
-    return unanswered[Math.floor(Math.random() * unanswered.length)];
-  };
-
-  useEffect(() => {
-    if (!currentQuestion && !progress.levelCompleted && questions.length > 0) {
-      const next = getNextQuestion();
-      if (next) {
-        setCurrentQuestion(next);
-      } else {
-        setProgress((prev) => {
-          const updated = { ...prev, levelCompleted: true };
-          saveProgress(updated);
-          return updated;
-        });
+    const updateTimer = () => {
+      const remaining = Math.max(
+        0,
+        Math.floor((new Date(session.expiresAt).getTime() - Date.now()) / 1000)
+      );
+      setTimeRemaining(remaining);
+      if (remaining <= 0) {
+        setSession(null);
+        setSessionError("Session expired. Start a new session to continue.");
       }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [session?.expiresAt]);
+
+  const startNewSession = useCallback(
+    async (level: number) => {
+      setSessionError(null);
+      setIsStartingSession(true);
+      try {
+        const newSession = await start(level);
+        setSession(newSession);
+        setCurrentQuestionIndex(0);
+        setSelectedAnswer(null);
+        setShowResult(false);
+        setAnswerResult(null);
+      } catch (err) {
+        if (err instanceof TriviaApiError && err.status === 429) {
+          setSessionError("Slow down! Please wait before starting another session.");
+        } else {
+          setSessionError("Failed to start session. Please try again.");
+        }
+      } finally {
+        setIsStartingSession(false);
+      }
+    },
+    [start]
+  );
+
+  useEffect(() => {
+    if (!session && !sessionError && !isStartingSession && currentLevel > 0) {
+      startNewSession(currentLevel);
     }
-  }, [questions.length, progress.levelCompleted, currentQuestion]);
+  }, [currentLevel]);
 
   const handleAnswer = async (answerIndex: number) => {
-    if (showResult || !currentQuestion) return;
+    if (showResult || !currentQuestion || !session) return;
 
     setSelectedAnswer(answerIndex);
     setShowResult(true);
 
     try {
       const result = await submit(
+        session.sessionId,
         currentQuestion.id,
-        answerIndex,
-        progress.currentLevel
+        answerIndex
       );
 
       setAnswerResult({
         correct: result.correct,
         satsEarned: result.satsEarned,
+        explanation: result.explanation,
       });
 
-      const newProgress: LocalProgress = {
-        ...progress,
-        totalQuestionsAnswered: progress.totalQuestionsAnswered + 1,
-        correctAnswers: progress.correctAnswers + (result.correct ? 1 : 0),
-        currentStreak: result.streak,
-        bestStreak: Math.max(progress.bestStreak, result.streak),
-        answeredQuestions: [...progress.answeredQuestions, currentQuestion.id],
-        satsEarned: progress.satsEarned + result.satsEarned,
-        levelCompleted: result.levelUnlocked,
-      };
-
-      if (result.levelUnlocked && progress.currentLevel < 21) {
-        newProgress.currentLevel = progress.currentLevel + 1;
-        newProgress.levelCompleted = false;
-      }
-
-      setProgress(newProgress);
-      saveProgress(newProgress);
       refreshBalance();
+      refetchProgress();
+
+      if (result.levelUnlocked) {
+        refetchProgress();
+      }
     } catch (err) {
+      if (err instanceof TriviaApiError && (err.status === 410 || err.status === 400)) {
+        setSession(null);
+        setSessionError("Session expired. Start a new session to continue.");
+        return;
+      }
       setAnswerResult({
         correct: false,
         satsEarned: 0,
+        explanation: "Failed to submit answer. Please try again.",
       });
     }
   };
 
   const nextQuestion = () => {
-    const next = getNextQuestion();
-    if (next) {
-      setCurrentQuestion(next);
+    if (!session) return;
+    const nextIdx = currentQuestionIndex + 1;
+    if (nextIdx < session.questions.length) {
+      setCurrentQuestionIndex(nextIdx);
       setSelectedAnswer(null);
       setShowResult(false);
       setAnswerResult(null);
     } else {
-      setProgress((prev) => {
-        const updated = { ...prev, levelCompleted: true };
-        saveProgress(updated);
-        return updated;
-      });
+      setSession(null);
+      refetchProgress();
     }
   };
 
-  const startNextLevel = () => {
-    const newLevel = progress.currentLevel + 1;
-    changeLevel(newLevel);
-  };
-
   const changeLevel = (newLevel: number) => {
-    const newProgress = {
-      ...progress,
-      currentLevel: newLevel,
-      levelCompleted: false,
-    };
-    setProgress(newProgress);
-    saveProgress(newProgress);
-    setCurrentQuestion(null);
+    setSession(null);
+    setSessionError(null);
+    setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setShowResult(false);
     setAnswerResult(null);
     setShowLevelSelector(false);
+    startNewSession(newLevel);
   };
 
   const accuracy =
-    progress.totalQuestionsAnswered > 0
-      ? Math.round((progress.correctAnswers / progress.totalQuestionsAnswered) * 100)
+    progress && progress.questionsAnswered > 0
+      ? Math.round((progress.correct / progress.questionsAnswered) * 100)
       : 0;
 
-  const levelAnsweredCount = progress.answeredQuestions.filter((id) =>
-    questions.some((q) => q.id === id)
-  ).length;
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
 
   return (
     <div className="rounded-lg border border-caribbean-sand bg-card p-6">
@@ -205,7 +179,7 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
           <div>
             <h2 className="flex items-center gap-2 text-xl font-semibold">
               <Brain className="h-5 w-5 text-caribbean-ocean" />
-              Bitcoin Trivia - Level {progress.currentLevel}
+              Bitcoin Trivia - Level {currentLevel}
             </h2>
             <p className="text-sm text-muted-foreground">
               Test your knowledge and earn sats!
@@ -217,7 +191,7 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
               <span className="font-semibold">{balance?.balance || 0} sats</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Streak: {progress.currentStreak}
+              Streak: {progress?.streak ?? 0}
             </p>
           </div>
         </div>
@@ -227,7 +201,7 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-2xl font-bold text-caribbean-ocean">
-              {progress.totalQuestionsAnswered}
+              {progress?.questionsAnswered ?? 0}
             </p>
             <p className="text-xs text-muted-foreground">Questions</p>
           </div>
@@ -237,13 +211,22 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
           </div>
           <div>
             <p className="text-2xl font-bold text-caribbean-sunset">
-              {progress.bestStreak}
+              {progress?.bestStreak ?? 0}
             </p>
             <p className="text-xs text-muted-foreground">Best Streak</p>
           </div>
         </div>
 
-        {isLoading ? (
+        {timeRemaining !== null && session && (
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            <span className={cn(timeRemaining < 60 && "text-red-500 font-semibold")}>
+              {formatTime(timeRemaining)} remaining
+            </span>
+          </div>
+        )}
+
+        {isStartingSession ? (
           <div className="space-y-4">
             <div className="h-6 w-24 bg-muted animate-pulse rounded" />
             <div className="h-8 w-full bg-muted animate-pulse rounded" />
@@ -252,17 +235,24 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
                 <div key={i} className="h-12 w-full bg-muted animate-pulse rounded" />
               ))}
             </div>
-            <p className="text-center text-muted-foreground">Loading questions...</p>
+            <p className="text-center text-muted-foreground">Starting session...</p>
           </div>
-        ) : error ? (
+        ) : sessionError ? (
           <div className="space-y-3">
             <div className="flex items-center gap-2 p-4 rounded-lg border border-red-200 bg-red-50">
               <AlertCircle className="h-4 w-4 text-red-600" />
-              <p className="text-sm text-red-600">Failed to load questions.</p>
+              <p className="text-sm text-red-600">{sessionError}</p>
             </div>
-            <Button onClick={() => refetch()} variant="outline" className="w-full">
+            <Button
+              onClick={() => {
+                setSessionError(null);
+                startNewSession(currentLevel);
+              }}
+              variant="outline"
+              className="w-full"
+            >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Try Again
+              Start New Session
             </Button>
           </div>
         ) : currentQuestion ? (
@@ -326,28 +316,36 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
                     ? `Correct! +${answerResult.satsEarned} sats`
                     : "Incorrect. Keep learning!"}
                 </p>
+                {answerResult.explanation && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {answerResult.explanation}
+                  </p>
+                )}
               </div>
             )}
           </div>
-        ) : progress.levelCompleted ? (
+        ) : !session ? (
           <div className="space-y-3">
             <div className="p-4 bg-caribbean-mango/10 rounded-lg text-center">
               <h3 className="text-lg font-semibold mb-2">
-                Level {progress.currentLevel} Complete!
+                Session Complete!
               </h3>
               <p className="text-sm text-muted-foreground">
-                You've mastered this level. Ready for harder questions?
+                {progress?.levelCompleted
+                  ? "Level complete! Ready for harder questions?"
+                  : "Start a new session to keep playing."}
               </p>
             </div>
-            {progress.currentLevel < 21 && (
-              <Button
-                onClick={startNextLevel}
-                className="w-full bg-caribbean-mango hover:bg-caribbean-mango/90"
-              >
-                <Brain className="mr-2 h-4 w-4" />
-                Start Level {progress.currentLevel + 1}
-              </Button>
-            )}
+            <Button
+              onClick={() => startNewSession(currentLevel)}
+              className="w-full bg-caribbean-mango hover:bg-caribbean-mango/90"
+              disabled={isStartingSession}
+            >
+              <Brain className="mr-2 h-4 w-4" />
+              {progress?.levelCompleted && currentLevel < 21
+                ? `Start Level ${currentLevel + 1}`
+                : "Start New Session"}
+            </Button>
           </div>
         ) : (
           <div className="text-center py-8">
@@ -355,32 +353,36 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
           </div>
         )}
 
-        {showResult && currentQuestion && !progress.levelCompleted && (
+        {showResult && currentQuestion && session && (
           <Button
             onClick={nextQuestion}
             className="w-full bg-caribbean-ocean hover:bg-caribbean-ocean/90"
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Next Question
+            {currentQuestionIndex + 1 < (session?.questions.length ?? 0)
+              ? "Next Question"
+              : "Finish Session"}
           </Button>
         )}
 
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Level {progress.currentLevel} Progress</span>
-            <span>
-              {levelAnsweredCount} / {questions.length || 12}
-            </span>
+        {session && (
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Session Progress</span>
+              <span>
+                {currentQuestionIndex + (showResult ? 1 : 0)} / {session.questions.length}
+              </span>
+            </div>
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-caribbean-ocean transition-all"
+                style={{
+                  width: `${((currentQuestionIndex + (showResult ? 1 : 0)) / Math.max(session.questions.length, 1)) * 100}%`,
+                }}
+              />
+            </div>
           </div>
-          <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-caribbean-ocean transition-all"
-              style={{
-                width: `${(levelAnsweredCount / Math.max(questions.length, 1)) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
+        )}
 
         <Button
           variant="outline"
@@ -401,7 +403,7 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
             </DialogDescription>
           </DialogHeader>
           <LevelSelector
-            currentLevel={progress.currentLevel}
+            currentLevel={currentLevel}
             onSelectLevel={changeLevel}
           />
         </DialogContent>

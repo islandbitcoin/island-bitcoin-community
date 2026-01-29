@@ -27,9 +27,7 @@ export interface AdminConfig {
   whitelistedDomains: string[];
   communityPubkeys: string[];
   maintenanceMode: boolean;
-  gameVisibility: {
-    satoshiStacker: boolean;
-  };
+  gameVisibility: Record<string, never>;
   pullPaymentId?: string;
   btcPayServerUrl?: string;
   btcPayStoreId?: string;
@@ -86,9 +84,7 @@ function parseConfig(raw: RawConfig): AdminConfig {
     whitelistedDomains: parseArray(raw.whitelistedDomains),
     communityPubkeys: parseArray(raw.communityPubkeys),
     maintenanceMode: parseBoolean(raw.maintenanceMode, false),
-    gameVisibility: {
-      satoshiStacker: parseBoolean(raw.satoshiStacker, true),
-    },
+    gameVisibility: {},
     pullPaymentId: raw.pullPaymentId || undefined,
     btcPayServerUrl: raw.btcPayServerUrl || undefined,
     btcPayStoreId: raw.btcPayStoreId || undefined,
@@ -217,11 +213,6 @@ export function useAdminConfig() {
         }
         if (updates.rateLimits.maxStreakBonus !== undefined) {
           flatUpdates.maxStreakBonus = updates.rateLimits.maxStreakBonus;
-        }
-      }
-      if (updates.gameVisibility) {
-        if (updates.gameVisibility.satoshiStacker !== undefined) {
-          flatUpdates.satoshiStacker = updates.gameVisibility.satoshiStacker;
         }
       }
       if (updates.adminPubkeys !== undefined) {

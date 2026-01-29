@@ -47,7 +47,6 @@ const mockConfig = {
   triviaPerHour: "10",
   adminPubkeys: JSON.stringify(["admin-pubkey-123"]),
   maintenanceMode: "false",
-  satoshiStacker: "true",
   pullPaymentId: "",
   btcPayServerUrl: "",
 };

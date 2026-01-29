@@ -38,16 +38,26 @@ vi.mock("@/hooks/useGameWallet", () => ({
 }));
 
 vi.mock("@/hooks/useTriviaQuestions", () => ({
-  useTriviaQuestions: vi.fn(() => ({
-    data: { questions: [], level: 1, progress: null },
-    isLoading: false,
-    error: null,
-    refetch: vi.fn(),
+  useStartSession: vi.fn(() => ({
+    start: vi.fn(),
+    isAuthenticated: false,
   })),
   useSubmitAnswer: vi.fn(() => ({
     submit: vi.fn(),
     isAuthenticated: false,
   })),
+  useTriviaProgress: vi.fn(() => ({
+    data: null,
+    refetch: vi.fn(),
+  })),
+  TriviaApiError: class TriviaApiError extends Error {
+    status: number;
+    constructor(message: string, status: number) {
+      super(message);
+      this.name = "TriviaApiError";
+      this.status = status;
+    }
+  },
 }));
 
 vi.mock("@/hooks/useNostrFeed", () => ({

@@ -6,10 +6,12 @@ export { useGameWallet } from "./useGameWallet";
 export { useTheme, type Theme } from "./useTheme";
 export { useNostrFeed } from "./useNostrFeed";
 export {
-  useTriviaQuestions,
+  useStartSession,
   useSubmitAnswer,
+  useTriviaProgress,
+  TriviaApiError,
   type TriviaQuestion,
+  type TriviaSession,
+  type TriviaAnswerResponse,
   type TriviaProgress,
-  type TriviaQuestionsResponse,
-  type AnswerResponse,
 } from "./useTriviaQuestions";

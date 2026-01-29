@@ -19,13 +19,13 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { PayoutsTable } from "@/components/admin/PayoutsTable";
+import { createNIP98AuthHeader } from "@/lib/nip98";
 import {
   AlertCircle,
   Shield,
   ArrowUpRight,
   CheckCircle2,
   Zap,
-  Coins,
   Loader2,
   Calendar,
 } from "lucide-react";
@@ -1127,35 +1127,8 @@ export default function Admin() {
                    // Control which games are available to users 🕹️
                  </CardDescription>
                </CardHeader>
-               <CardContent className="space-y-4 pt-6">
-                 <div className="space-y-4">
-                   <div className="flex items-center justify-between p-4 rounded-lg border border-cyan-500/30 bg-slate-950/50 hover:border-cyan-400/50 transition-colors">
-                     <div className="space-y-1">
-                       <div className="flex items-center gap-2">
-                         <Coins className="h-5 w-5 text-cyan-400" />
-                         <h4 className="font-mono font-medium text-cyan-400">Satoshi Stacker ⚡</h4>
-                       </div>
-                       <p className="text-sm text-slate-400 font-mono">
-                         A clicker game where users can stack sats and earn real
-                         Bitcoin rewards through proof of work 💪
-                       </p>
-                     </div>
-                     <Switch
-                       id="satoshi-stacker"
-                       checked={config.gameVisibility.satoshiStacker}
-                       onCheckedChange={(checked) =>
-                         updateConfig({
-                           gameVisibility: {
-                             ...config.gameVisibility,
-                             satoshiStacker: checked,
-                           },
-                         })
-                       }
-                     />
-                   </div>
-                 </div>
-
-                 <Alert className="border-cyan-500/30 bg-cyan-500/10">
+                <CardContent className="space-y-4 pt-6">
+                  <Alert className="border-cyan-500/30 bg-cyan-500/10">
                    <AlertCircle className="h-4 w-4 text-cyan-400" />
                    <AlertDescription className="text-slate-300 font-mono text-sm">
                      Games marked as hidden will not appear in the Bitcoin Education
@@ -1251,14 +1224,16 @@ export default function Admin() {
                            if (!user?.pubkey) return;
                            setIsDiscovering(true);
                            setDiscoverResult(null);
-                           try {
-                             const response = await fetch(`${API_BASE}/config/discover-pubkeys`, {
-                               method: "POST",
-                               headers: {
-                                 "Content-Type": "application/json",
-                                 Authorization: `Nostr ${user.pubkey}`,
-                               },
-                             });
+                            try {
+                              const url = `${window.location.origin}${API_BASE}/config/discover-pubkeys`;
+                              const authHeader = await createNIP98AuthHeader(url, 'POST');
+                              const response = await fetch(`${API_BASE}/config/discover-pubkeys`, {
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  Authorization: authHeader,
+                                },
+                              });
                              if (!response.ok) throw new Error("Failed to discover pubkeys");
                              const result = await response.json();
                              setDiscoverResult(result);
