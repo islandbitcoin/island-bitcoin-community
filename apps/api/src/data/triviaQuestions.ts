@@ -6,7 +6,7 @@
  */
 
 export interface TriviaQuestionData {
-  id: string;
+  id: number;
   question: string;
   options: string[];
   correctAnswer: number; // 0-3 index
@@ -32,7 +32,7 @@ export const MAX_LEVEL = 21;
 export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
   // ============ LEVEL 1 (Easy - Basics) ============
   {
-    id: 'l1-q1',
+    id: 1,
     question: 'What is the maximum supply of Bitcoin?',
     options: ['21 million', '100 million', '1 billion', 'Unlimited'],
     correctAnswer: 0,
@@ -42,7 +42,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 1,
   },
   {
-    id: 'l1-q2',
+    id: 2,
     question: 'Who created Bitcoin?',
     options: ['Vitalik Buterin', 'Satoshi Nakamoto', 'Nick Szabo', 'Hal Finney'],
     correctAnswer: 1,
@@ -52,7 +52,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 1,
   },
   {
-    id: 'l1-q3',
+    id: 3,
     question: 'What is a satoshi?',
     options: ['A Bitcoin wallet', 'The smallest unit of Bitcoin', 'A mining hardware', 'An exchange'],
     correctAnswer: 1,
@@ -62,7 +62,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 1,
   },
   {
-    id: 'l1-q4',
+    id: 4,
     question: 'What does "HODL" mean in Bitcoin culture?',
     options: ['High Order Digital Ledger', 'Hold On for Dear Life', 'A misspelling of "hold"', 'Highly Optimized Distributed Ledger'],
     correctAnswer: 2,
@@ -72,7 +72,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 1,
   },
   {
-    id: 'l1-q5',
+    id: 5,
     question: 'How many satoshis are in one Bitcoin?',
     options: ['1,000', '1,000,000', '100,000,000', '1,000,000,000'],
     correctAnswer: 2,
@@ -84,7 +84,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 2 (Easy - History) ============
   {
-    id: 'l2-q1',
+    id: 6,
     question: 'When was the Bitcoin whitepaper published?',
     options: ['2007', '2008', '2009', '2010'],
     correctAnswer: 1,
@@ -94,7 +94,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 2,
   },
   {
-    id: 'l2-q2',
+    id: 7,
     question: 'When was the first Bitcoin block (Genesis Block) mined?',
     options: ['October 2008', 'January 2009', 'March 2009', 'January 2010'],
     correctAnswer: 1,
@@ -104,7 +104,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 2,
   },
   {
-    id: 'l2-q3',
+    id: 8,
     question: 'What was the first commercial Bitcoin transaction?',
     options: ['Buying a car', 'Purchasing pizza', 'Paying for web hosting', 'Buying coffee'],
     correctAnswer: 1,
@@ -114,7 +114,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 2,
   },
   {
-    id: 'l2-q4',
+    id: 9,
     question: 'What day is celebrated as Bitcoin Pizza Day?',
     options: ['January 3', 'May 22', 'October 31', 'December 25'],
     correctAnswer: 1,
@@ -124,7 +124,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 2,
   },
   {
-    id: 'l2-q5',
+    id: 10,
     question: 'What message was embedded in the Genesis Block?',
     options: ['Hello World', 'The Times 03/Jan/2009 Chancellor on brink of second bailout for banks', 'Bitcoin: A Peer-to-Peer Electronic Cash System', 'In code we trust'],
     correctAnswer: 1,
@@ -136,7 +136,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 3 (Easy - Basics) ============
   {
-    id: 'l3-q1',
+    id: 11,
     question: 'What is a Bitcoin wallet?',
     options: ['A physical wallet for Bitcoin', 'Software to store private keys', 'A Bitcoin exchange', 'A mining device'],
     correctAnswer: 1,
@@ -146,7 +146,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 3,
   },
   {
-    id: 'l3-q2',
+    id: 12,
     question: 'What is a private key in Bitcoin?',
     options: ['Your password to an exchange', 'A secret number that allows spending Bitcoin', 'Your Bitcoin address', 'A mining reward'],
     correctAnswer: 1,
@@ -156,7 +156,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 3,
   },
   {
-    id: 'l3-q3',
+    id: 13,
     question: 'What is a public key in Bitcoin?',
     options: ['Your exchange login', 'Derived from private key, used to receive Bitcoin', 'A mining pool address', 'A transaction ID'],
     correctAnswer: 1,
@@ -166,7 +166,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 3,
   },
   {
-    id: 'l3-q4',
+    id: 14,
     question: 'What happens if you lose your private key?',
     options: ['You can recover it from the blockchain', 'Your Bitcoin is lost forever', 'The exchange will help you', 'Nothing, Bitcoin is safe'],
     correctAnswer: 1,
@@ -176,7 +176,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 3,
   },
   {
-    id: 'l3-q5',
+    id: 15,
     question: 'What is a seed phrase (recovery phrase)?',
     options: ['A password for exchanges', '12-24 words to recover a wallet', 'A mining algorithm', 'A type of Bitcoin address'],
     correctAnswer: 1,
@@ -188,7 +188,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 4 (Easy - Basics) ============
   {
-    id: 'l4-q1',
+    id: 16,
     question: 'What is Bitcoin mining?',
     options: ['Digging for physical coins', 'Process of validating transactions and creating new Bitcoin', 'Trading Bitcoin', 'Storing Bitcoin'],
     correctAnswer: 1,
@@ -198,7 +198,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 4,
   },
   {
-    id: 'l4-q2',
+    id: 17,
     question: 'What do Bitcoin miners receive as a reward?',
     options: ['Only transaction fees', 'Only new Bitcoin', 'New Bitcoin and transaction fees', 'Nothing'],
     correctAnswer: 2,
@@ -208,7 +208,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 4,
   },
   {
-    id: 'l4-q3',
+    id: 18,
     question: 'What is the blockchain?',
     options: ['A type of cryptocurrency', 'A distributed ledger of all transactions', 'A mining pool', 'A wallet type'],
     correctAnswer: 1,
@@ -218,7 +218,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 4,
   },
   {
-    id: 'l4-q4',
+    id: 19,
     question: 'Can Bitcoin transactions be reversed?',
     options: ['Yes, within 24 hours', 'Yes, by contacting support', 'No, they are irreversible', 'Only by miners'],
     correctAnswer: 2,
@@ -228,7 +228,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 4,
   },
   {
-    id: 'l4-q5',
+    id: 20,
     question: 'What is a Bitcoin address?',
     options: ['Your email for Bitcoin', 'A string of characters to receive Bitcoin', 'Your private key', 'A mining pool'],
     correctAnswer: 1,
@@ -240,7 +240,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 5 (Easy - Culture) ============
   {
-    id: 'l5-q1',
+    id: 21,
     question: 'What does "Not your keys, not your coins" mean?',
     options: ['You need physical keys', 'Only you should control your private keys', 'Keys are expensive', 'Coins need keys to work'],
     correctAnswer: 1,
@@ -250,7 +250,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 5,
   },
   {
-    id: 'l5-q2',
+    id: 22,
     question: 'What is a "whale" in Bitcoin terminology?',
     options: ['A large mining pool', 'Someone holding large amounts of Bitcoin', 'A blockchain explorer', 'A consensus mechanism'],
     correctAnswer: 1,
@@ -260,7 +260,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 5,
   },
   {
-    id: 'l5-q3',
+    id: 23,
     question: 'What does "stacking sats" mean?',
     options: ['Building mining rigs', 'Accumulating small amounts of Bitcoin', 'Organizing transactions', 'Creating wallets'],
     correctAnswer: 1,
@@ -270,7 +270,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 5,
   },
   {
-    id: 'l5-q4',
+    id: 24,
     question: 'What is "FUD" in crypto terminology?',
     options: ['Fast Unified Distribution', 'Fear, Uncertainty, and Doubt', 'Fully Utilized Data', 'First User Deposit'],
     correctAnswer: 1,
@@ -280,7 +280,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 5,
   },
   {
-    id: 'l5-q5',
+    id: 25,
     question: 'What does "DYOR" stand for?',
     options: ['Do Your Own Research', 'Deposit Your Own Resources', 'Digital Yield On Returns', 'Decentralized Yield Optimization Rate'],
     correctAnswer: 0,
@@ -292,7 +292,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 6 (Easy - Technical Intro) ============
   {
-    id: 'l6-q1',
+    id: 26,
     question: 'What is Bitcoin\'s average block time?',
     options: ['1 minute', '10 minutes', '30 minutes', '1 hour'],
     correctAnswer: 1,
@@ -302,7 +302,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 6,
   },
   {
-    id: 'l6-q2',
+    id: 27,
     question: 'How often does Bitcoin halving occur?',
     options: ['Every year', 'Every 2 years', 'Approximately every 4 years', 'Every 10 years'],
     correctAnswer: 2,
@@ -312,7 +312,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 6,
   },
   {
-    id: 'l6-q3',
+    id: 28,
     question: 'What is a Bitcoin node?',
     options: ['A mining device', 'A computer running Bitcoin software', 'A Bitcoin ATM', 'A type of wallet'],
     correctAnswer: 1,
@@ -322,7 +322,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 6,
   },
   {
-    id: 'l6-q4',
+    id: 29,
     question: 'What is a transaction fee in Bitcoin?',
     options: ['A tax on Bitcoin', 'Payment to miners for processing transactions', 'Exchange commission', 'Wallet maintenance cost'],
     correctAnswer: 1,
@@ -332,7 +332,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 6,
   },
   {
-    id: 'l6-q5',
+    id: 30,
     question: 'What is the mempool?',
     options: ['A mining pool', 'Waiting area for unconfirmed transactions', 'A type of wallet', 'Memory in mining hardware'],
     correctAnswer: 1,
@@ -344,7 +344,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 7 (Easy - Lightning Intro) ============
   {
-    id: 'l7-q1',
+    id: 31,
     question: 'What is the Lightning Network?',
     options: ['A faster blockchain', 'A Layer 2 payment protocol', 'A mining pool', 'An exchange platform'],
     correctAnswer: 1,
@@ -354,7 +354,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 7,
   },
   {
-    id: 'l7-q2',
+    id: 32,
     question: 'What is a Lightning channel?',
     options: ['A TV channel about Bitcoin', 'A payment pathway between two parties', 'A mining connection', 'A wallet feature'],
     correctAnswer: 1,
@@ -364,7 +364,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 7,
   },
   {
-    id: 'l7-q3',
+    id: 33,
     question: 'What is the main advantage of Lightning Network?',
     options: ['More secure than Bitcoin', 'Instant and cheap transactions', 'Creates new Bitcoin', 'Replaces the blockchain'],
     correctAnswer: 1,
@@ -374,7 +374,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 7,
   },
   {
-    id: 'l7-q4',
+    id: 34,
     question: 'What is a Lightning invoice?',
     options: ['A bill from your ISP', 'A payment request with amount and destination', 'A mining receipt', 'A tax document'],
     correctAnswer: 1,
@@ -384,7 +384,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 7,
   },
   {
-    id: 'l7-q5',
+    id: 35,
     question: 'Can Lightning transactions be done offline?',
     options: ['Yes, always', 'No, both parties must be online', 'Only the sender needs to be online', 'Only the receiver needs to be online'],
     correctAnswer: 1,
@@ -396,7 +396,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 8 (Medium - Technical) ============
   {
-    id: 'l8-q1',
+    id: 36,
     question: 'What is the purpose of Bitcoin\'s difficulty adjustment?',
     options: ['To make mining more profitable', 'To maintain ~10 minute block times', 'To increase transaction fees', 'To reduce energy consumption'],
     correctAnswer: 1,
@@ -406,7 +406,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 8,
   },
   {
-    id: 'l8-q2',
+    id: 37,
     question: 'How often does Bitcoin\'s difficulty adjust?',
     options: ['Every block', 'Every 2016 blocks', 'Every day', 'Every month'],
     correctAnswer: 1,
@@ -416,7 +416,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 8,
   },
   {
-    id: 'l8-q3',
+    id: 38,
     question: 'What hashing algorithm does Bitcoin use?',
     options: ['MD5', 'SHA-256', 'Scrypt', 'Ethash'],
     correctAnswer: 1,
@@ -426,7 +426,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 8,
   },
   {
-    id: 'l8-q4',
+    id: 39,
     question: 'What is a hash in Bitcoin?',
     options: ['A type of wallet', 'A fixed-length output from input data', 'A mining pool', 'A transaction type'],
     correctAnswer: 1,
@@ -436,7 +436,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 8,
   },
   {
-    id: 'l8-q5',
+    id: 40,
     question: 'What is proof of work?',
     options: ['Employment verification', 'Consensus mechanism requiring computational effort', 'Transaction verification', 'Wallet backup'],
     correctAnswer: 1,
@@ -448,7 +448,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 9 (Medium - Technical) ============
   {
-    id: 'l9-q1',
+    id: 41,
     question: 'What is a Bitcoin UTXO?',
     options: ['Unified Transaction Exchange Order', 'Unspent Transaction Output', 'Universal Token Exchange Operation', 'User Transaction Export Object'],
     correctAnswer: 1,
@@ -458,7 +458,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 9,
   },
   {
-    id: 'l9-q2',
+    id: 42,
     question: 'What is the purpose of the nonce in mining?',
     options: ['To encrypt transactions', 'To find a valid block hash', 'To verify signatures', 'To generate private keys'],
     correctAnswer: 1,
@@ -468,7 +468,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 9,
   },
   {
-    id: 'l9-q3',
+    id: 43,
     question: 'What is a Merkle tree in Bitcoin?',
     options: ['A type of wallet', 'A data structure for efficient transaction verification', 'A mining algorithm', 'A consensus mechanism'],
     correctAnswer: 1,
@@ -478,7 +478,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 9,
   },
   {
-    id: 'l9-q4',
+    id: 44,
     question: 'What does "confirmations" mean for a transaction?',
     options: ['Email confirmations', 'Number of blocks mined after the transaction', 'Exchange approvals', 'Wallet verifications'],
     correctAnswer: 1,
@@ -488,7 +488,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 9,
   },
   {
-    id: 'l9-q5',
+    id: 45,
     question: 'How many confirmations are typically considered secure?',
     options: ['1', '3', '6', '100'],
     correctAnswer: 2,
@@ -500,7 +500,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 10 (Medium - History) ============
   {
-    id: 'l10-q1',
+    id: 46,
     question: 'What was Mt. Gox?',
     options: ['A mining pool', 'A Bitcoin exchange that collapsed', 'A wallet provider', 'A Bitcoin developer'],
     correctAnswer: 1,
@@ -510,7 +510,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 10,
   },
   {
-    id: 'l10-q2',
+    id: 47,
     question: 'What year did Bitcoin first reach $1?',
     options: ['2009', '2010', '2011', '2012'],
     correctAnswer: 2,
@@ -520,7 +520,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 10,
   },
   {
-    id: 'l10-q3',
+    id: 48,
     question: 'What was Silk Road?',
     options: ['A Bitcoin exchange', 'A darknet marketplace accepting Bitcoin', 'A mining pool', 'A wallet provider'],
     correctAnswer: 1,
@@ -530,7 +530,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 10,
   },
   {
-    id: 'l10-q4',
+    id: 49,
     question: 'Who received the first Bitcoin transaction from Satoshi?',
     options: ['Nick Szabo', 'Hal Finney', 'Gavin Andresen', 'Roger Ver'],
     correctAnswer: 1,
@@ -540,7 +540,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 10,
   },
   {
-    id: 'l10-q5',
+    id: 50,
     question: 'What country first adopted Bitcoin as legal tender?',
     options: ['United States', 'Japan', 'El Salvador', 'Switzerland'],
     correctAnswer: 2,
@@ -552,7 +552,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 11 (Medium - Lightning) ============
   {
-    id: 'l11-q1',
+    id: 51,
     question: 'What is channel capacity in Lightning?',
     options: ['Number of transactions', 'Maximum Bitcoin that can flow through a channel', 'Number of connected nodes', 'Transaction speed'],
     correctAnswer: 1,
@@ -562,7 +562,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 11,
   },
   {
-    id: 'l11-q2',
+    id: 52,
     question: 'What is inbound liquidity?',
     options: ['Money coming into an exchange', 'Capacity to receive payments on Lightning', 'Mining rewards', 'Transaction fees'],
     correctAnswer: 1,
@@ -572,7 +572,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 11,
   },
   {
-    id: 'l11-q3',
+    id: 53,
     question: 'What happens when a Lightning channel is closed?',
     options: ['Bitcoin is lost', 'Final balance is settled on-chain', 'Channel can be reopened', 'Nothing happens'],
     correctAnswer: 1,
@@ -582,7 +582,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 11,
   },
   {
-    id: 'l11-q4',
+    id: 54,
     question: 'What is a Lightning node?',
     options: ['A mining device', 'Software that routes Lightning payments', 'A Bitcoin ATM', 'A hardware wallet'],
     correctAnswer: 1,
@@ -592,7 +592,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 11,
   },
   {
-    id: 'l11-q5',
+    id: 55,
     question: 'What is BOLT in Lightning Network?',
     options: ['A wallet name', 'Basis of Lightning Technology (specifications)', 'A payment protocol', 'A node software'],
     correctAnswer: 1,
@@ -604,7 +604,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 12 (Medium - Technical) ============
   {
-    id: 'l12-q1',
+    id: 56,
     question: 'What does BIP stand for?',
     options: ['Bitcoin Investment Protocol', 'Blockchain Integration Process', 'Bitcoin Improvement Proposal', 'Basic Implementation Pattern'],
     correctAnswer: 2,
@@ -614,7 +614,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 12,
   },
   {
-    id: 'l12-q2',
+    id: 57,
     question: 'What is SegWit?',
     options: ['A Bitcoin fork', 'Segregated Witness - a protocol upgrade', 'A mining algorithm', 'A wallet type'],
     correctAnswer: 1,
@@ -624,7 +624,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 12,
   },
   {
-    id: 'l12-q3',
+    id: 58,
     question: 'What is a soft fork?',
     options: ['A blockchain split', 'A backward-compatible protocol upgrade', 'A mining pool change', 'A wallet update'],
     correctAnswer: 1,
@@ -634,7 +634,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 12,
   },
   {
-    id: 'l12-q4',
+    id: 59,
     question: 'What is a hard fork?',
     options: ['A wallet backup', 'A non-backward-compatible protocol change', 'A mining difficulty increase', 'A transaction type'],
     correctAnswer: 1,
@@ -644,7 +644,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 12,
   },
   {
-    id: 'l12-q5',
+    id: 60,
     question: 'What is the block size limit in Bitcoin?',
     options: ['1 MB', '4 MB weight', '8 MB', 'Unlimited'],
     correctAnswer: 1,
@@ -656,7 +656,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 13 (Medium - Security) ============
   {
-    id: 'l13-q1',
+    id: 61,
     question: 'What is a 51% attack?',
     options: ['Hacking 51% of wallets', 'Controlling majority of mining power', 'Stealing 51% of Bitcoin', 'Attacking 51 nodes'],
     correctAnswer: 1,
@@ -666,7 +666,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 13,
   },
   {
-    id: 'l13-q2',
+    id: 62,
     question: 'What is a double-spend attack?',
     options: ['Spending Bitcoin twice', 'Paying double fees', 'Mining two blocks', 'Creating duplicate wallets'],
     correctAnswer: 0,
@@ -676,7 +676,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 13,
   },
   {
-    id: 'l13-q3',
+    id: 63,
     question: 'What is multi-signature (multisig)?',
     options: ['Multiple passwords', 'Requiring multiple keys to spend', 'Multiple wallets', 'Multiple transactions'],
     correctAnswer: 1,
@@ -686,7 +686,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 13,
   },
   {
-    id: 'l13-q4',
+    id: 64,
     question: 'What is a hardware wallet?',
     options: ['A computer for mining', 'A physical device storing private keys', 'A USB drive with Bitcoin', 'A mining ASIC'],
     correctAnswer: 1,
@@ -696,7 +696,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 13,
   },
   {
-    id: 'l13-q5',
+    id: 65,
     question: 'What is cold storage?',
     options: ['Storing Bitcoin in cold weather', 'Keeping private keys offline', 'Freezing transactions', 'Slow transaction processing'],
     correctAnswer: 1,
@@ -708,7 +708,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 14 (Medium - Advanced Basics) ============
   {
-    id: 'l14-q1',
+    id: 66,
     question: 'What is a coinbase transaction?',
     options: ['A transaction on Coinbase exchange', 'The first transaction in a block creating new Bitcoin', 'A multi-signature transaction', 'A Lightning payment'],
     correctAnswer: 1,
@@ -718,7 +718,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 14,
   },
   {
-    id: 'l14-q2',
+    id: 67,
     question: 'What is "replace-by-fee" (RBF)?',
     options: ['Automatic fee adjustment', 'Replacing unconfirmed transactions with higher fee', 'Mining pool fee sharing', 'Lightning channel fees'],
     correctAnswer: 1,
@@ -728,7 +728,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 14,
   },
   {
-    id: 'l14-q3',
+    id: 68,
     question: 'What is CPFP (Child Pays for Parent)?',
     options: ['Family Bitcoin sharing', 'Speeding up stuck transactions by spending their outputs', 'Mining inheritance', 'Wallet hierarchy'],
     correctAnswer: 1,
@@ -738,7 +738,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 14,
   },
   {
-    id: 'l14-q4',
+    id: 69,
     question: 'What is a Bitcoin script?',
     options: ['A movie about Bitcoin', 'Programming language for transaction conditions', 'Mining software', 'Wallet backup'],
     correctAnswer: 1,
@@ -748,7 +748,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 14,
   },
   {
-    id: 'l14-q5',
+    id: 70,
     question: 'What is OP_RETURN?',
     options: ['A refund mechanism', 'An opcode for storing data on blockchain', 'A mining command', 'A wallet feature'],
     correctAnswer: 1,
@@ -760,7 +760,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 15 (Hard - Advanced Technical) ============
   {
-    id: 'l15-q1',
+    id: 71,
     question: 'What is Taproot?',
     options: ['A mining algorithm', 'A privacy and smart contract upgrade', 'A wallet type', 'A Lightning feature'],
     correctAnswer: 1,
@@ -770,7 +770,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 15,
   },
   {
-    id: 'l15-q2',
+    id: 72,
     question: 'What are Schnorr signatures?',
     options: ['A wallet encryption method', 'A signature scheme enabling aggregation', 'A mining technique', 'A consensus mechanism'],
     correctAnswer: 1,
@@ -780,7 +780,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 15,
   },
   {
-    id: 'l15-q3',
+    id: 73,
     question: 'What is MAST (Merkelized Abstract Syntax Trees)?',
     options: ['A mining pool', 'A way to hide unused script conditions', 'A wallet feature', 'A Lightning protocol'],
     correctAnswer: 1,
@@ -790,7 +790,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 15,
   },
   {
-    id: 'l15-q4',
+    id: 74,
     question: 'What is a Bitcoin covenant?',
     options: ['A legal contract', 'A restriction on how Bitcoin can be spent', 'A mining agreement', 'A Lightning channel type'],
     correctAnswer: 1,
@@ -800,7 +800,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 15,
   },
   {
-    id: 'l15-q5',
+    id: 75,
     question: 'What is CTV (CheckTemplateVerify)?',
     options: ['A wallet verification', 'A proposed covenant opcode', 'A mining check', 'A Lightning feature'],
     correctAnswer: 1,
@@ -812,7 +812,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 16 (Hard - Lightning Advanced) ============
   {
-    id: 'l16-q1',
+    id: 76,
     question: 'What is an HTLC in Lightning?',
     options: ['High Transaction Limit Channel', 'Hash Time-Locked Contract', 'Hosted Transaction Ledger Chain', 'Hybrid Token Liquidity Contract'],
     correctAnswer: 1,
@@ -822,7 +822,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 16,
   },
   {
-    id: 'l16-q2',
+    id: 77,
     question: 'What is a watchtower in Lightning?',
     options: ['A monitoring service for channel fraud', 'A large Lightning node', 'A mining pool', 'A wallet feature'],
     correctAnswer: 0,
@@ -832,7 +832,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 16,
   },
   {
-    id: 'l16-q3',
+    id: 78,
     question: 'What is a submarine swap?',
     options: ['Underwater mining', 'Atomic swap between on-chain and Lightning', 'Channel rebalancing', 'Node migration'],
     correctAnswer: 1,
@@ -842,7 +842,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 16,
   },
   {
-    id: 'l16-q4',
+    id: 79,
     question: 'What is MPP (Multi-Path Payments)?',
     options: ['Multiple payment processors', 'Splitting payments across multiple routes', 'Multi-party channels', 'Mining pool payments'],
     correctAnswer: 1,
@@ -852,7 +852,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 16,
   },
   {
-    id: 'l16-q5',
+    id: 80,
     question: 'What is AMP (Atomic Multi-Path)?',
     options: ['Amplified mining power', 'Spontaneous multi-path payments', 'Automated market protocol', 'Advanced mining pool'],
     correctAnswer: 1,
@@ -864,7 +864,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 17 (Hard - Security & Attacks) ============
   {
-    id: 'l17-q1',
+    id: 81,
     question: 'What is a "dust attack"?',
     options: ['Mining with low power', 'Sending tiny amounts to track users', 'Spamming the mempool', 'Creating empty blocks'],
     correctAnswer: 1,
@@ -874,7 +874,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 17,
   },
   {
-    id: 'l17-q2',
+    id: 82,
     question: 'What is Bitcoin\'s "time warp" attack?',
     options: ['Manipulating timestamps to lower difficulty', 'Double spending using time delays', 'Reversing old transactions', 'Accelerating block production'],
     correctAnswer: 0,
@@ -884,7 +884,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 17,
   },
   {
-    id: 'l17-q3',
+    id: 83,
     question: 'What is a Sybil attack?',
     options: ['Hacking a specific wallet', 'Creating many fake identities to gain influence', 'Mining attack', 'Exchange hack'],
     correctAnswer: 1,
@@ -894,7 +894,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 17,
   },
   {
-    id: 'l17-q4',
+    id: 84,
     question: 'What is an eclipse attack?',
     options: ['Solar-powered mining attack', 'Isolating a node from the network', 'Blocking transactions', 'Mining pool attack'],
     correctAnswer: 1,
@@ -904,7 +904,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 17,
   },
   {
-    id: 'l17-q5',
+    id: 85,
     question: 'What is selfish mining?',
     options: ['Mining alone', 'Withholding blocks to gain advantage', 'Using stolen electricity', 'Mining without a pool'],
     correctAnswer: 1,
@@ -916,7 +916,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 18 (Hard - History & Events) ============
   {
-    id: 'l18-q1',
+    id: 86,
     question: 'What was the significance of block 478,558?',
     options: ['First Lightning transaction', 'Bitcoin Cash fork', 'SegWit activation', 'Taproot activation'],
     correctAnswer: 1,
@@ -926,7 +926,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 18,
   },
   {
-    id: 'l18-q2',
+    id: 87,
     question: 'What was the "Blocksize War"?',
     options: ['A mining competition', 'Debate over increasing Bitcoin block size', 'Exchange rivalry', 'Developer conflict'],
     correctAnswer: 1,
@@ -936,7 +936,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 18,
   },
   {
-    id: 'l18-q3',
+    id: 88,
     question: 'What is the DAO hack\'s relevance to Bitcoin?',
     options: ['It affected Bitcoin directly', 'It showed why Bitcoin avoids complex smart contracts', 'It was a Bitcoin exchange hack', 'It improved Bitcoin security'],
     correctAnswer: 1,
@@ -946,7 +946,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 18,
   },
   {
-    id: 'l18-q4',
+    id: 89,
     question: 'What was the "value overflow incident" of 2010?',
     options: ['Exchange crash', 'Bug that created 184 billion Bitcoin', 'Mining pool failure', 'Wallet hack'],
     correctAnswer: 1,
@@ -956,7 +956,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 18,
   },
   {
-    id: 'l18-q5',
+    id: 90,
     question: 'When did Satoshi Nakamoto disappear?',
     options: ['2009', '2010', '2011', '2012'],
     correctAnswer: 2,
@@ -968,7 +968,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 19 (Hard - Advanced Concepts) ============
   {
-    id: 'l19-q1',
+    id: 91,
     question: 'What is a PSBT?',
     options: ['Private Secure Bitcoin Transfer', 'Partially Signed Bitcoin Transaction', 'Public Signature Broadcast Token', 'Peer-to-peer Secure Bitcoin Transaction'],
     correctAnswer: 1,
@@ -978,7 +978,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 19,
   },
   {
-    id: 'l19-q2',
+    id: 92,
     question: 'What is a timelock in Bitcoin?',
     options: ['Transaction scheduling', 'Restriction preventing spending until a certain time/block', 'Mining delay', 'Wallet lock'],
     correctAnswer: 1,
@@ -988,7 +988,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 19,
   },
   {
-    id: 'l19-q3',
+    id: 93,
     question: 'What is the difference between CLTV and CSV?',
     options: ['Mining algorithms', 'Absolute vs relative timelocks', 'Wallet types', 'Transaction formats'],
     correctAnswer: 1,
@@ -998,7 +998,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 19,
   },
   {
-    id: 'l19-q4',
+    id: 94,
     question: 'What is a DLC (Discreet Log Contract)?',
     options: ['A logging system', 'Smart contracts using oracle signatures', 'A mining contract', 'A Lightning channel type'],
     correctAnswer: 1,
@@ -1008,7 +1008,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 19,
   },
   {
-    id: 'l19-q5',
+    id: 95,
     question: 'What is Miniscript?',
     options: ['A small Bitcoin script', 'A language for writing Bitcoin spending conditions', 'A mining script', 'A wallet format'],
     correctAnswer: 1,
@@ -1020,7 +1020,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 20 (Hard - Expert) ============
   {
-    id: 'l20-q1',
+    id: 96,
     question: 'What is Stratum V2?',
     options: ['A wallet protocol', 'An improved mining pool protocol', 'A Lightning upgrade', 'A consensus change'],
     correctAnswer: 1,
@@ -1030,7 +1030,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 20,
   },
   {
-    id: 'l20-q2',
+    id: 97,
     question: 'What is Erlay?',
     options: ['A wallet name', 'A proposal for efficient transaction relay', 'A mining pool', 'A Lightning feature'],
     correctAnswer: 1,
@@ -1040,7 +1040,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 20,
   },
   {
-    id: 'l20-q3',
+    id: 98,
     question: 'What is Assumeutxo?',
     options: ['A wallet assumption', 'A method for faster node synchronization', 'A mining technique', 'A transaction type'],
     correctAnswer: 1,
@@ -1050,7 +1050,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 20,
   },
   {
-    id: 'l20-q4',
+    id: 99,
     question: 'What is compact block relay?',
     options: ['Smaller blocks', 'Efficient block propagation using short IDs', 'Block compression', 'Mining optimization'],
     correctAnswer: 1,
@@ -1060,7 +1060,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 20,
   },
   {
-    id: 'l20-q5',
+    id: 100,
     question: 'What is the "nothing at stake" problem?',
     options: ['A Bitcoin mining issue', 'A proof-of-stake vulnerability', 'A Lightning bug', 'A wallet flaw'],
     correctAnswer: 1,
@@ -1072,7 +1072,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
 
   // ============ LEVEL 21 (Hard - Master) ============
   {
-    id: 'l21-q1',
+    id: 101,
     question: 'What is the "Bitcoin Obituaries" website tracking?',
     options: ['Failed businesses', 'Times Bitcoin was declared dead', 'Lost wallets', 'Deprecated features'],
     correctAnswer: 1,
@@ -1082,7 +1082,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 21,
   },
   {
-    id: 'l21-q2',
+    id: 102,
     question: 'What percentage of Bitcoin is estimated lost forever?',
     options: ['About 5%', 'About 10%', 'About 20%', 'About 30%'],
     correctAnswer: 2,
@@ -1092,7 +1092,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 21,
   },
   {
-    id: 'l21-q3',
+    id: 103,
     question: 'What is a "fee sniping" attack?',
     options: ['Stealing transaction fees', 'Miners reorganizing to steal high-fee transactions', 'Exchange fee manipulation', 'Wallet fee theft'],
     correctAnswer: 1,
@@ -1102,7 +1102,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 21,
   },
   {
-    id: 'l21-q4',
+    id: 104,
     question: 'What is the "halving" effect on Bitcoin\'s stock-to-flow ratio?',
     options: ['Decreases it', 'Doubles it', 'No effect', 'Halves it'],
     correctAnswer: 1,
@@ -1112,7 +1112,7 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
     level: 21,
   },
   {
-    id: 'l21-q5',
+    id: 105,
     question: 'What is the theoretical maximum transactions per second on Lightning?',
     options: ['Thousands', 'Millions', 'Billions', 'Unlimited'],
     correctAnswer: 1,
@@ -1123,37 +1123,54 @@ export const TRIVIA_QUESTIONS: TriviaQuestionData[] = [
   },
 ];
 
-/**
- * Get questions for a specific level
- */
-export function getQuestionsForLevel(level: number): TriviaQuestionData[] {
+import { db } from '../db';
+import { questions } from '../db/schema';
+import { eq, and } from 'drizzle-orm';
+
+export async function getQuestionsForLevel(level: number): Promise<TriviaQuestionData[]> {
   if (level < 1 || level > MAX_LEVEL) {
     return [];
   }
-  return TRIVIA_QUESTIONS.filter(q => q.level === level);
+  const rows = await db.select().from(questions).where(
+    and(eq(questions.level, level), eq(questions.active, true))
+  );
+  return rows.map((r) => ({
+    id: r.id,
+    question: r.question,
+    options: r.options,
+    correctAnswer: r.correctAnswer,
+    explanation: r.explanation,
+    difficulty: r.difficulty,
+    category: r.category,
+    level: r.level,
+  }));
 }
 
-/**
- * Get a question by ID
- */
-export function getQuestionById(id: string): TriviaQuestionData | undefined {
-  return TRIVIA_QUESTIONS.find(q => q.id === id);
+export async function getQuestionById(id: number): Promise<TriviaQuestionData | undefined> {
+  const row = await db.select().from(questions).where(
+    and(eq(questions.id, id), eq(questions.active, true))
+  ).get();
+  if (!row) return undefined;
+  return {
+    id: row.id,
+    question: row.question,
+    options: row.options,
+    correctAnswer: row.correctAnswer,
+    explanation: row.explanation,
+    difficulty: row.difficulty,
+    category: row.category,
+    level: row.level,
+  };
 }
 
-/**
- * Validate an answer for a question
- */
-export function validateAnswer(questionId: string, answerIndex: number): boolean {
-  const question = getQuestionById(questionId);
+export async function validateAnswer(questionId: number, answerIndex: number): Promise<boolean> {
+  const question = await getQuestionById(questionId);
   if (!question) return false;
   return question.correctAnswer === answerIndex;
 }
 
-/**
- * Get sat reward for a question
- */
-export function getSatReward(questionId: string): number {
-  const question = getQuestionById(questionId);
+export async function getSatReward(questionId: number): Promise<number> {
+  const question = await getQuestionById(questionId);
   if (!question) return 0;
   return SAT_REWARDS[question.difficulty];
 }
