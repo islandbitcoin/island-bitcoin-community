@@ -66,21 +66,38 @@ export async function createNIP98AuthHeader(
 
   if (signer) {
     // Use provided signer (nsec, bunker, or extension login via @nostrify/react)
-    pubkey = await signer.getPublicKey();
+    try {
+      pubkey = await signer.getPublicKey();
 
-    // Create unsigned event
-    const unsignedEvent = {
-      kind: 27235,
-      created_at: Math.floor(Date.now() / 1000),
-      tags: [
-        ['u', url],
-        ['method', method],
-      ],
-      content: '',
-    };
+      // Create unsigned event
+      const unsignedEvent = {
+        kind: 27235,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [
+          ['u', url],
+          ['method', method],
+        ],
+        content: '',
+      };
 
-    // Sign with NostrSigner (returns full event with id, pubkey, sig)
-    signedEvent = await signer.signEvent(unsignedEvent) as SignedNIP98Event;
+      // Sign with NostrSigner (returns full event with id, pubkey, sig)
+      signedEvent = await signer.signEvent(unsignedEvent) as SignedNIP98Event;
+    } catch (signerError) {
+      console.warn('[NIP-98] Signer failed, falling back to window.nostr:', signerError);
+      if (!window.nostr) {
+        throw new Error('Browser extension not available and no fallback signer');
+      }
+      const nostr = window.nostr as WindowNostr;
+      pubkey = await nostr.getPublicKey();
+      const unsignedEvent: UnsignedNIP98Event = {
+        kind: 27235,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [['u', url], ['method', method]],
+        content: '',
+        pubkey,
+      };
+      signedEvent = await nostr.signEvent(unsignedEvent);
+    }
   } else if (window.nostr) {
     // Fallback to window.nostr for extension users
     const nostr = window.nostr as WindowNostr;
