@@ -13,6 +13,7 @@ import { UserProfile } from "@/components/auth/UserProfile";
 import { BitcoinTrivia } from "@/components/games/BitcoinTrivia";
 import { Leaderboard } from "@/components/games/Leaderboard";
 import { NostrFeed } from "@/components/social/NostrFeed";
+import { cn } from "@/lib/utils";
 
 const SITE_NAME = "Island Bitcoin";
 const SITE_TAGLINE = "Bitcoin Paradise";
@@ -128,7 +129,12 @@ export default function Index() {
             )}
 
             {!eventsLoading && previewEvents.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-6xl mx-auto">
+              <div className={cn(
+                "gap-6 mb-8 mx-auto",
+                previewEvents.length === 1 && "max-w-2xl",
+                previewEvents.length === 2 && "grid grid-cols-1 md:grid-cols-2 max-w-4xl",
+                previewEvents.length >= 3 && "grid grid-cols-1 md:grid-cols-3 max-w-6xl"
+              )}>
                 {previewEvents.map((item) => {
                   const event = item.event.event;
                   const location = event.location;
