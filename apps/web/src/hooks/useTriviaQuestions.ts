@@ -10,6 +10,22 @@ function buildNip98Url(apiPath: string): string {
     : `${window.location.origin}${apiPath}`;
 }
 
+/**
+ * Safely get signer from user object, handling browser extension errors.
+ * For extension logins, accessing user.signer may throw "Browser extension not available".
+ * This function catches that error and falls back to window.nostr.
+ */
+function getSafeSignerForUser(user?: { pubkey: string; signer?: any }): any {
+  if (!user) return undefined;
+  try {
+    return user.signer || (window.nostr as any);
+  } catch {
+    // If accessing user.signer throws (e.g., browser extension not available),
+    // fall back to window.nostr directly
+    return window.nostr as any;
+  }
+}
+
 export interface TriviaQuestion {
   id: number;
   question: string;
@@ -62,8 +78,7 @@ async function startSession(level: number, user?: { pubkey: string; signer?: any
 
   if (user?.pubkey) {
     const nip98Url = buildNip98Url(apiPath);
-    // Use provided signer or fall back to window.nostr for extension users
-    const signer = user.signer || (window.nostr as any);
+    const signer = getSafeSignerForUser(user);
     const authHeader = await createNIP98AuthHeader(nip98Url, "POST", signer);
     headers.Authorization = authHeader;
   }
@@ -100,8 +115,7 @@ async function submitAnswer(
 
   if (user?.pubkey) {
     const nip98Url = buildNip98Url(apiPath);
-    // Use provided signer or fall back to window.nostr for extension users
-    const signer = user.signer || (window.nostr as any);
+    const signer = getSafeSignerForUser(user);
     const authHeader = await createNIP98AuthHeader(nip98Url, "POST", signer);
     headers.Authorization = authHeader;
   }
@@ -126,12 +140,12 @@ async function submitAnswer(
   return response.json();
 }
 
-async function fetchProgress(signer?: any): Promise<TriviaProgress> {
+async function fetchProgress(user?: { pubkey: string; signer?: any }): Promise<TriviaProgress> {
   const apiPath = `${API_BASE}/trivia/progress`;
   const nip98Url = buildNip98Url(apiPath);
   
-  // Use provided signer or fall back to window.nostr for extension users
-  const authHeader = await createNIP98AuthHeader(nip98Url, "GET", signer || (window.nostr as any));
+  const signer = getSafeSignerForUser(user);
+  const authHeader = await createNIP98AuthHeader(nip98Url, "GET", signer);
 
   const response = await fetch(apiPath, {
     headers: { Authorization: authHeader },
@@ -186,7 +200,7 @@ export function useTriviaProgress() {
 
   return useQuery({
     queryKey: ["trivia-progress", user?.pubkey],
-    queryFn: () => fetchProgress(user?.signer),
+    queryFn: () => fetchProgress(user || undefined),
     enabled: !!user?.pubkey,
     staleTime: 30 * 1000,
   });
