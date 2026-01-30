@@ -5,9 +5,10 @@ import { db } from '../db';
 import { users, balances, payouts } from '../db/schema';
 import { requireAuth, requireAdmin } from '../middleware/auth';
 import { randomUUID } from 'node:crypto';
-import { eq, and, gte } from 'drizzle-orm';
+import { eq, and, gte, sql } from 'drizzle-orm';
 import { HTTPException } from 'hono/http-exception';
 import type { UserBalance, GamePayout } from '@island-bitcoin/shared';
+import { sendPayment } from '../services/flash';
 
 export const walletRoute = new Hono();
 
@@ -140,7 +141,11 @@ walletRoute.post(
   zValidator('json', withdrawSchema),
   async (c) => {
     const pubkey = c.get('pubkey');
-    const { amount } = c.req.valid('json');
+    const { amount, lightningAddress } = c.req.valid('json');
+
+    await db.update(users)
+      .set({ lightningAddress })
+      .where(eq(users.pubkey, pubkey));
 
     const withdrawalMinConfig = await db.query.config.findFirst({
       where: (config, { eq }) => eq(config.key, 'withdrawal_min'),
@@ -226,6 +231,30 @@ walletRoute.post(
         lastActivity: nowISO,
       })
       .where(eq(balances.userId, pubkey));
+
+    const AUTO_PROCESS_THRESHOLD = 1000;
+
+    if (amount < AUTO_PROCESS_THRESHOLD) {
+      const flashTokenConfig = await db.query.config.findFirst({
+        where: (config, { eq }) => eq(config.key, 'ory_token'),
+      });
+
+      if (flashTokenConfig?.value) {
+        try {
+          const result = await sendPayment(lightningAddress, amount, flashTokenConfig.value);
+          if (result.success) {
+            await db.update(payouts)
+              .set({ status: 'paid', txId: result.paymentHash || null })
+              .where(eq(payouts.id, payoutId));
+            await db.update(balances)
+              .set({ pending: sql`pending - ${amount}` })
+              .where(eq(balances.userId, pubkey));
+          }
+        } catch {
+          // Leave as pending — admin will process manually
+        }
+      }
+    }
 
     const updatedBalance = await db.query.balances.findFirst({
       where: (balances, { eq }) => eq(balances.userId, pubkey),
