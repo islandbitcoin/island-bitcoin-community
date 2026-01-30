@@ -33,6 +33,7 @@ const VALID_CONFIG_KEYS = new Set([
   'btcPayApiKey',
   'whitelistedDomains',
   'communityPubkeys',
+  'ory_token',
 ]);
 
 const DEFAULT_CONFIG: Record<string, string> = {
