@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Zap, AlertCircle, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +31,12 @@ export function PayoutButton({
   const [success, setSuccess] = useState(false);
 
   const { withdraw } = useWithdraw();
+
+  useEffect(() => {
+    if (lightningAddress && !address) {
+      setAddress(lightningAddress);
+    }
+  }, [lightningAddress]);
 
   const handleWithdrawAll = useCallback(() => {
     setAmount(balance.toString());
