@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-import { Menu, Moon, Settings, Sun, X } from "lucide-react";
-import { useState } from "react";
+import { Menu, Moon, Settings, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoginButton } from "@/components/auth/LoginButton";
 import { UserProfile } from "@/components/auth/UserProfile";
@@ -10,12 +9,12 @@ import { cn } from "@/lib/utils";
 
 interface HeaderProps {
   className?: string;
+  onMenuClick?: () => void;
 }
 
-export function Header({ className }: HeaderProps) {
+export function Header({ className, onMenuClick }: HeaderProps) {
   const { user } = useCurrentUser();
   const { theme, setTheme } = useTheme();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -100,52 +99,19 @@ export function Header({ className }: HeaderProps) {
               <LoginButton className="hidden sm:flex" />
             )}
 
-            <Button
-              variant="outline"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
+            {onMenuClick && (
+              <Button
+                variant="outline"
+                size="icon"
+                className="md:hidden"
+                onClick={onMenuClick}
+                aria-label="Open menu"
+              >
                 <Menu className="h-5 w-5" />
-              )}
-            </Button>
+              </Button>
+            )}
           </div>
         </div>
-
-        {mobileMenuOpen && (
-          <nav className="md:hidden pt-4 pb-2 border-t border-border mt-4">
-            <div className="flex flex-col gap-2">
-              <Link
-                to="/"
-                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link
-                to="/events"
-                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Events
-              </Link>
-              <Link
-                to="/about"
-                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                About
-              </Link>
-              <div className="px-4 py-2">
-                {user ? <UserProfile /> : <LoginButton />}
-              </div>
-            </div>
-          </nav>
-        )}
       </div>
     </header>
   );
