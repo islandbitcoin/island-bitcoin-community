@@ -1,7 +1,13 @@
 import { useCurrentUser } from './useCurrentUser';
-import { buildNip98Url, createNIP98AuthHeader } from '../lib/nip98';
+import { createNIP98AuthHeader } from '../lib/nip98';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
+
+function buildNip98Url(apiPath: string): string {
+  return apiPath.startsWith("http")
+    ? apiPath
+    : `${window.location.origin}${apiPath}`;
+}
 
 export function useWithdraw() {
   const { user } = useCurrentUser();
