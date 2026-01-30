@@ -34,6 +34,8 @@ const VALID_CONFIG_KEYS = new Set([
   'whitelistedDomains',
   'communityPubkeys',
   'ory_token',
+  'autoApprove',
+  'autoApproveThreshold',
 ]);
 
 const DEFAULT_CONFIG: Record<string, string> = {
