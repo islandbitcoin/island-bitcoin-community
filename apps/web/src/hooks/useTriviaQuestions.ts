@@ -19,11 +19,17 @@ export interface TriviaQuestion {
   level: number;
 }
 
+export interface TriviaSessionAnswer {
+  questionId: number;
+  correct: boolean;
+}
+
 export interface TriviaSession {
   sessionId: string;
   questions: TriviaQuestion[];
   level: number;
   expiresAt: string;
+  answers?: TriviaSessionAnswer[];
 }
 
 export interface TriviaAnswerResponse {

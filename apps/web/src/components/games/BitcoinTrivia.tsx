@@ -107,7 +107,8 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
     if (currentSessionData && !session) {
       console.log('[BitcoinTrivia] Restoring session from server', currentSessionData);
       setSession(currentSessionData);
-      setCurrentQuestionIndex(0);
+      const answeredCount = currentSessionData.answers?.length ?? 0;
+      setCurrentQuestionIndex(answeredCount);
     }
   }, [currentSessionData, session]);
 
