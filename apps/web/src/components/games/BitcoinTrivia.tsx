@@ -41,8 +41,8 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
   const { user } = useCurrentUser();
   const { start } = useStartSession();
   const { submit } = useSubmitAnswer();
-  const { data: progress, refetch: refetchProgress } = useTriviaProgress();
-  const { data: currentSessionData } = useCurrentSession();
+  const { data: progress, refetch: refetchProgress, isLoading: isProgressLoading } = useTriviaProgress();
+  const { data: currentSessionData, isLoading: isSessionLoading } = useCurrentSession();
 
   const currentLevel = progress?.currentLevel ?? 1;
   const currentQuestion: TriviaQuestion | null =
@@ -117,10 +117,14 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
     // If user is defined (even if null), we know auth state is ready
     if (user === undefined) return;
     
+    // Wait for progress and current session queries to finish loading
+    // to avoid starting with wrong level or duplicating an active session
+    if (isProgressLoading || isSessionLoading) return;
+    
     if (!session && !sessionError && !isStartingSession && currentLevel > 0) {
       startNewSession(currentLevel);
     }
-  }, [user, session, sessionError, isStartingSession, currentLevel, startNewSession]);
+  }, [user, session, sessionError, isStartingSession, currentLevel, startNewSession, isProgressLoading, isSessionLoading]);
 
   const handleAnswer = async (answerIndex: number) => {
     if (showResult || !currentQuestion || !session) return;
