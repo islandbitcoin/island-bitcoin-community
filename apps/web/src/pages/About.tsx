@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import {
   Shield,
   Lock,
-  Zap,
   Users,
   Trophy,
   Heart,
@@ -78,31 +77,8 @@ const features = [
 
 export default function About() {
   return (
-    <Layout hideHeader hideFooter>
+    <Layout>
       <div className="min-h-screen bg-gradient-to-b from-muted via-background to-muted/30">
-        <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <Link
-                to="/"
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-              >
-                <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  {SITE_NAME}
-                </span>
-                <Zap className="w-5 h-5 text-primary" />
-              </Link>
-              <Link to="/">
-                <Button
-                  variant="outline"
-                  className="border-primary text-primary hover:bg-primary/10"
-                >
-                  Back to Home
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </header>
 
         <section className="py-16 sm:py-20">
           <div className="container mx-auto px-4">
@@ -287,7 +263,7 @@ export default function About() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
-                  href="https://github.com/islandbitcoin/www/fork"
+                  href="https://github.com/islandbitcoin/island-bitcoin-community/fork"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -297,7 +273,7 @@ export default function About() {
                   </Button>
                 </a>
                 <a
-                  href="https://github.com/islandbitcoin/www#readme"
+                  href="https://github.com/islandbitcoin/island-bitcoin-community#readme"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -333,31 +309,6 @@ export default function About() {
             </div>
           </div>
         </section>
-
-        <footer
-          role="contentinfo"
-          className="py-8 border-t border-border bg-card/50"
-        >
-          <div className="container mx-auto px-4">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">
-                &copy; {new Date().getFullYear()} {SITE_NAME}. Built with B and
-                islands
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Vibed with{" "}
-                <a
-                  href="https://soapbox.pub/tools/mkstack/"
-                  className="text-primary hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  MKStack
-                </a>
-              </p>
-            </div>
-          </div>
-        </footer>
       </div>
     </Layout>
   );
