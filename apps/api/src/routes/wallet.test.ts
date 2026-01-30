@@ -4,11 +4,15 @@ import { walletRoute } from './wallet';
 import { db } from '../db';
 import { users, balances, payouts, config } from '../db/schema';
 import { verifyEvent } from '@island-bitcoin/nostr';
+import { eq } from 'drizzle-orm';
 import type { Event } from 'nostr-tools';
+import * as flashService from '../services/flash';
 
 vi.mock('@island-bitcoin/nostr', () => ({
   verifyEvent: vi.fn(() => true),
 }));
+
+vi.mock('../services/flash');
 
 describe('GET /api/wallet/balance', () => {
   let app: Hono;
@@ -960,6 +964,163 @@ describe('POST /api/wallet/withdraw', () => {
       });
 
       expect(payoutCount).toHaveLength(2);
+    });
+  });
+
+  describe('auto-process via Flash', () => {
+    beforeEach(async () => {
+      await db.insert(users).values({ pubkey: userPubkey });
+      await db.insert(balances).values({
+        userId: userPubkey,
+        balance: 5000,
+        pending: 0,
+        totalEarned: 10000,
+        totalWithdrawn: 5000,
+      });
+
+      await db.insert(config).values({
+        key: 'ory_token',
+        value: 'flash-test-token',
+      });
+
+      vi.clearAllMocks();
+    });
+
+    it('should auto-process small withdrawal and set status to paid', async () => {
+      vi.mocked(flashService.sendPayment).mockResolvedValue({
+        success: true,
+        paymentHash: 'hash-abc',
+      });
+
+      const res = await app.request('http://localhost/api/wallet/withdraw', {
+        method: 'POST',
+        body: JSON.stringify({ amount: 500, lightningAddress: validLightningAddress }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: createAuthHeader(userPubkey),
+        },
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.balance).toBe(4500);
+      expect(body.pendingBalance).toBe(0);
+
+      const payout = await db.query.payouts.findFirst({
+        where: (payouts, { eq }) => eq(payouts.userId, userPubkey),
+      });
+      expect(payout?.status).toBe('paid');
+      expect(payout?.txId).toBe('hash-abc');
+
+      expect(flashService.sendPayment).toHaveBeenCalledWith(
+        validLightningAddress, 500, 'flash-test-token'
+      );
+    });
+
+    it('should leave payout as pending when Flash payment fails', async () => {
+      vi.mocked(flashService.sendPayment).mockResolvedValue({
+        success: false,
+        error: 'Route not found',
+      });
+
+      const res = await app.request('http://localhost/api/wallet/withdraw', {
+        method: 'POST',
+        body: JSON.stringify({ amount: 500, lightningAddress: validLightningAddress }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: createAuthHeader(userPubkey),
+        },
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.pendingBalance).toBe(500);
+
+      const payout = await db.query.payouts.findFirst({
+        where: (payouts, { eq }) => eq(payouts.userId, userPubkey),
+      });
+      expect(payout?.status).toBe('pending');
+    });
+
+    it('should leave payout as pending when sendPayment throws', async () => {
+      vi.mocked(flashService.sendPayment).mockRejectedValue(new Error('Network error'));
+
+      const res = await app.request('http://localhost/api/wallet/withdraw', {
+        method: 'POST',
+        body: JSON.stringify({ amount: 500, lightningAddress: validLightningAddress }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: createAuthHeader(userPubkey),
+        },
+      });
+
+      expect(res.status).toBe(200);
+      const payout = await db.query.payouts.findFirst({
+        where: (payouts, { eq }) => eq(payouts.userId, userPubkey),
+      });
+      expect(payout?.status).toBe('pending');
+    });
+
+    it('should not auto-process withdrawal >= 1000 sats', async () => {
+      const res = await app.request('http://localhost/api/wallet/withdraw', {
+        method: 'POST',
+        body: JSON.stringify({ amount: 1000, lightningAddress: validLightningAddress }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: createAuthHeader(userPubkey),
+        },
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.pendingBalance).toBe(1000);
+
+      const payout = await db.query.payouts.findFirst({
+        where: (payouts, { eq }) => eq(payouts.userId, userPubkey),
+      });
+      expect(payout?.status).toBe('pending');
+      expect(flashService.sendPayment).not.toHaveBeenCalled();
+    });
+
+    it('should save lightning address to user record', async () => {
+      vi.mocked(flashService.sendPayment).mockResolvedValue({ success: true, paymentHash: 'h' });
+
+      await app.request('http://localhost/api/wallet/withdraw', {
+        method: 'POST',
+        body: JSON.stringify({ amount: 200, lightningAddress: 'new@address.com' }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: createAuthHeader(userPubkey),
+        },
+      });
+
+      const user = await db.query.users.findFirst({
+        where: (users, { eq }) => eq(users.pubkey, userPubkey),
+      });
+      expect(user?.lightningAddress).toBe('new@address.com');
+    });
+
+    it('should leave payout as pending when ory_token not configured', async () => {
+      await db.delete(config).where(eq(config.key, 'ory_token'));
+
+      const res = await app.request('http://localhost/api/wallet/withdraw', {
+        method: 'POST',
+        body: JSON.stringify({ amount: 500, lightningAddress: validLightningAddress }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: createAuthHeader(userPubkey),
+        },
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.pendingBalance).toBe(500);
+
+      const payout = await db.query.payouts.findFirst({
+        where: (payouts, { eq }) => eq(payouts.userId, userPubkey),
+      });
+      expect(payout?.status).toBe('pending');
+      expect(flashService.sendPayment).not.toHaveBeenCalled();
     });
   });
 });
