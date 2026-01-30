@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { X, Home, Calendar, Image, Gamepad2, Trophy, Info, Settings, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,7 @@ const navItems = [
   { label: "Home", href: "/", icon: Home },
   { label: "Events", href: "/events", icon: Calendar },
   { label: "Gallery", href: "/gallery", icon: Image },
-  { label: "Games", href: "/#trivia-section", icon: Gamepad2 },
+  { label: "Games", href: "/", icon: Gamepad2, scrollTo: "trivia-section" },
   { label: "Leaderboard", href: null, icon: Trophy, comingSoon: true },
   { label: "About", href: "/about", icon: Info },
   { label: "Settings", href: "/settings", icon: Settings, requiresAuth: true },
@@ -30,6 +30,7 @@ export const Sidebar = memo(function Sidebar({
   className,
 }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useCurrentUser();
   const [feedExpanded, setFeedExpanded] = useState(false);
 
@@ -77,11 +78,25 @@ export const Sidebar = memo(function Sidebar({
                 const Icon = item.icon;
 
                 if (item.href) {
+                  const handleClick = () => {
+                    onClose();
+                    if (item.scrollTo) {
+                      if (location.pathname !== "/") {
+                        navigate("/");
+                        setTimeout(() => {
+                          document.getElementById(item.scrollTo!)?.scrollIntoView({ behavior: "smooth" });
+                        }, 300);
+                      } else {
+                        document.getElementById(item.scrollTo)?.scrollIntoView({ behavior: "smooth" });
+                      }
+                    }
+                  };
+
                   return (
                     <Link
                       key={item.label}
-                      to={item.href}
-                      onClick={onClose}
+                      to={item.scrollTo ? "/" : item.href}
+                      onClick={handleClick}
                       className={cn(
                         "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                         isActive
