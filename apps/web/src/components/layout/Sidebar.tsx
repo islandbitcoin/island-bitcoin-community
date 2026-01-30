@@ -18,7 +18,7 @@ const navItems = [
   { label: "Home", href: "/", icon: Home },
   { label: "Events", href: "/events", icon: Calendar },
   { label: "Gallery", href: "/gallery", icon: Image },
-  { label: "Games", href: null, icon: Gamepad2, comingSoon: true },
+  { label: "Games", href: "/#trivia-section", icon: Gamepad2 },
   { label: "Leaderboard", href: null, icon: Trophy, comingSoon: true },
   { label: "About", href: "/about", icon: Info },
   { label: "Settings", href: "/settings", icon: Settings, requiresAuth: true },

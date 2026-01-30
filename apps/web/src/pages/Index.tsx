@@ -210,7 +210,7 @@ export default function Index() {
         </section>
 
         {import.meta.env.VITE_FEATURE_TRIVIA_GAME === "true" && (
-          <section className="py-12 sm:py-16">
+          <section id="trivia-section" className="py-12 sm:py-16">
             <div className="container mx-auto px-4">
               <div className="text-center mb-8 sm:mb-12">
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-foreground">Bitcoin Trivia</h2>
