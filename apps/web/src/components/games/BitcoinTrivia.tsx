@@ -121,10 +121,13 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
     // to avoid starting with wrong level or duplicating an active session
     if (isProgressLoading || isSessionLoading) return;
     
+    // Don't auto-start if there's an active session to restore
+    if (currentSessionData) return;
+    
     if (!session && !sessionError && !isStartingSession && currentLevel > 0) {
       startNewSession(currentLevel);
     }
-  }, [user, session, sessionError, isStartingSession, currentLevel, startNewSession, isProgressLoading, isSessionLoading]);
+  }, [user, session, sessionError, isStartingSession, currentLevel, startNewSession, isProgressLoading, isSessionLoading, currentSessionData]);
 
   const handleAnswer = async (answerIndex: number) => {
     if (showResult || !currentQuestion || !session) return;
