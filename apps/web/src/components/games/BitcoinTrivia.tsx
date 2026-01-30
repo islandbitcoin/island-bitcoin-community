@@ -14,6 +14,7 @@ import {
   type TriviaSession,
 } from "@/hooks/useTriviaQuestions";
 import { LevelSelector } from "./LevelSelector";
+import { PayoutButton } from "./PayoutButton";
 import {
   Dialog,
   DialogContent,
@@ -38,7 +39,7 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
   const { balance, refreshBalance } = useGameWallet();
-  const { user } = useCurrentUser();
+  const { user, metadata } = useCurrentUser();
   const { start } = useStartSession();
   const { submit } = useSubmitAnswer();
   const { data: progress, refetch: refetchProgress, isLoading: isProgressLoading } = useTriviaProgress();
@@ -398,15 +399,21 @@ export const BitcoinTrivia = memo(function BitcoinTrivia() {
           </div>
         )}
 
-        <Button
-          variant="outline"
-          onClick={() => setShowLevelSelector(true)}
-          className="w-full"
-        >
-          <Menu className="mr-2 h-4 w-4" />
-          Choose Different Level
-        </Button>
-      </div>
+         <Button
+           variant="outline"
+           onClick={() => setShowLevelSelector(true)}
+           className="w-full"
+         >
+           <Menu className="mr-2 h-4 w-4" />
+           Choose Different Level
+         </Button>
+
+         <PayoutButton
+           balance={balance?.balance || 0}
+           lightningAddress={metadata?.lud16}
+           refreshBalance={refreshBalance}
+         />
+       </div>
 
       <Dialog open={showLevelSelector} onOpenChange={setShowLevelSelector}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
