@@ -209,6 +209,10 @@ triviaRoute.get(
       questions: sanitizedQuestions,
       level: session.level,
       expiresAt: session.expiresAt,
+      answers: (session.answers || []).map(a => ({
+        questionId: a.questionId,
+        correct: a.correct,
+      })),
     });
   }
 );
