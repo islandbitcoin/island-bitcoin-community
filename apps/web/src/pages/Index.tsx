@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, Image, Menu, MapPin, X, ExternalLink } from "lucide-react";
 import Logo from "@/assets/logo.svg?react";
@@ -25,7 +25,10 @@ export default function Index() {
   const { events: upcomingEvents, isLoading: eventsLoading } = useEvents("upcoming");
   const previewEvents = upcomingEvents.slice(0, 3);
   const { images, isLoading: galleryLoading } = useGallery();
-  const previewImages = images.slice(0, 6);
+  const previewImages = useMemo(() => {
+    const shuffled = [...images].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 6);
+  }, [images]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
