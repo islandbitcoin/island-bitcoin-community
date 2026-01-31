@@ -97,6 +97,84 @@ const BLOSSOM_URLS: BlossomUrlEntry[] = [
     "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Pizza%20Please.mp4",
     "blossomUrl": "https://v.nostr.build/Er0VNbCVKDoQTzaU.mp4",
     "sha256": "63879a485cb66f2889501efffd73b6f6a6b716a85e968843d62821356060b456"
+  },
+  {
+    "filename": "Meetup Jan 2026 - 01.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Meetup%20Jan%202026%20-%2001.jpeg",
+    "blossomUrl": "https://image.nostr.build/f3e68c343ea859075e917ca892f77697ca075f8344f48e6a6ca9a1e7b52d1a14.jpg",
+    "sha256": "5b2bcda523e60bb5d6e1a68732d71f0291b4ecb3e9c4ec2aef202d45502cde3e"
+  },
+  {
+    "filename": "Meetup Jan 2026 - 02.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Meetup%20Jan%202026%20-%2002.jpeg",
+    "blossomUrl": "https://image.nostr.build/4cdd8bc519c0ad3ae556aead6cab06028d5618d4ccb086df726adcea81e73512.jpg",
+    "sha256": "4fb2abb3d9af3bfb1131d44db4289acaa62eb06947443a4cbdee78f0ad60c69e"
+  },
+  {
+    "filename": "Meetup Jan 2026 - 03.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Meetup%20Jan%202026%20-%2003.jpeg",
+    "blossomUrl": "https://image.nostr.build/a8ed8b2dd5353bfb62ddbb605956cb8492f157a3acac087641298168d95df4a9.jpg",
+    "sha256": "26f8742cd5f75182d3045cdddaa49fc35642a9ad6dc25c9287c68adf367e8d0e"
+  },
+  {
+    "filename": "Meetup Jan 2026 - 04.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Meetup%20Jan%202026%20-%2004.jpeg",
+    "blossomUrl": "https://image.nostr.build/90fb8664dc2fa45ebd7d93fdce165bc07c075ef8fc36d82dad1fe65ac2eaf805.jpg",
+    "sha256": "830120ac919bdd34e23ac53cd5943f9d8ccba466bd382916a32cbf1dcdbd96e4"
+  },
+  {
+    "filename": "Meetup Jan 2026 - 05.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Meetup%20Jan%202026%20-%2005.jpeg",
+    "blossomUrl": "https://image.nostr.build/1800489dc4b407107e8b963d389313a3e3e137c18c6d86b4a890e50ff658cc0c.jpg",
+    "sha256": "63eff37ae6ded9fb42baf6d95a93061d5a14da8a9731740f75984c0f7bd5225f"
+  },
+  {
+    "filename": "Meetup Jan 2026 - 06.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Meetup%20Jan%202026%20-%2006.jpeg",
+    "blossomUrl": "https://image.nostr.build/bfe9f7ffbfb246ec9fef612363273ecf63a6f8410ad46f4b5cc53574faca1fc1.jpg",
+    "sha256": "c6142810e9bd629e6bde8dda8818b6ce566152ed5bb845125983ab1bfd53f1d9"
+  },
+  {
+    "filename": "Meetup Jan 2026 - 07.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Meetup%20Jan%202026%20-%2007.jpeg",
+    "blossomUrl": "https://image.nostr.build/a1da6daecd8a9be7fd1d1b1b5932cd3a2bcabc95ee716a737ac65a89c77dbef4.jpg",
+    "sha256": "67a071d70398eb0c632daf8981efd19e6b6e18cc5133e34c57bb997cd4ba3e48"
+  },
+  {
+    "filename": "Meetup Jan 2026 - 08.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Meetup%20Jan%202026%20-%2008.jpeg",
+    "blossomUrl": "https://image.nostr.build/837d16445f6965c5506900072716fe25e6183f42a81610cc57c3a61f3fb766bb.jpg",
+    "sha256": "b58d815f0a6f0af312dbf7ac48d13c15cf6d265534a9dcb4bb7e8f4e465d5622"
+  },
+  {
+    "filename": "Meetup Jan 2026 - 09.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Meetup%20Jan%202026%20-%2009.jpeg",
+    "blossomUrl": "https://image.nostr.build/0ec4e7538470c10a1b55e85423f68793e57071b242cd529dba26bbf3999c6ceb.jpg",
+    "sha256": "e78cdf099f4696df05fff5e8b19f4062482fc69c0be30707c66a287e48947328"
+  },
+  {
+    "filename": "Meetup Jan 2026 - 10.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Meetup%20Jan%202026%20-%2010.jpeg",
+    "blossomUrl": "https://image.nostr.build/52f9c9abeb0c838bedb1249bd209e7af1cf5c3a48b7e305965bbe9055870f17c.jpg",
+    "sha256": "5685735229b17c3bbf0718e0ac556c4a2cd4658cf2d71f6c7466954cf1d4b46a"
+  },
+  {
+    "filename": "Meetup Jan 2026 - 11.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Meetup%20Jan%202026%20-%2011.jpeg",
+    "blossomUrl": "https://image.nostr.build/e38820dae0db518a0ab4e404d727e0874f0341a4c6fd477d67fb8b3536fb6d71.jpg",
+    "sha256": "6bdb3f86d58df5dd9b13cf4564877741bf7eeff738ce0e01a93d747442474807"
+  },
+  {
+    "filename": "Meetup Jan 2026 - 12.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Meetup%20Jan%202026%20-%2012.jpeg",
+    "blossomUrl": "https://image.nostr.build/064c9347610f6e8f1ce16cbe133cba28b548d747c6f0d345ebdab6d742d91001.jpg",
+    "sha256": "f89e6cc1d1618eb69b2a32c4192e5c2964a25642ffcf16b6f37d011ad382f507"
+  },
+  {
+    "filename": "Meetup Jan 2026 - 13.jpeg",
+    "originalUrl": "https://raw.githubusercontent.com/islandbitcoin/islandbitcoin-community/main/gallery/Meetup%20Jan%202026%20-%2013.jpeg",
+    "blossomUrl": "https://image.nostr.build/6a25c0d0e8339e3c16ddea9e48d68839133e65a82829987c9b942adfc3fdcace.jpg",
+    "sha256": "dd8f53cab60af038376929c4a99eb2e658775188573141f70947f21b251ae48a"
   }
 ];
 
