@@ -13,6 +13,7 @@ export interface CalendarEvent {
 
 // Reliable relays for NIP-52 calendar event queries
 const DEFAULT_RELAYS = [
+  'wss://relay.islandbitcoin.com',
   'wss://relay.damus.io',
   'wss://relay.primal.net',
   'wss://nos.lol',
@@ -142,7 +143,7 @@ async function fetchNip52Events(relays: string[] = DEFAULT_RELAYS): Promise<Cale
   };
 
   try {
-    const relaysToQuery = relays.slice(0, 3);
+    const relaysToQuery = relays.slice(0, 4);
     const results = await Promise.allSettled(relaysToQuery.map(queryRelay));
     for (const result of results) {
       if (result.status === 'fulfilled') {
