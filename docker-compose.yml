@@ -14,6 +14,10 @@ services:
       - PORT=3001
       - ORY_TOKEN=${ORY_TOKEN:-}
       - AUTO_APPROVE=${AUTO_APPROVE:-false}
+      # Comma-separated Evento.so event IDs to pull into the events page.
+      # Add new events here as Island Bitcoin creates them on evento.so.
+      # Example: evt_zRt3yEMyk1zuud55,evt_abc123,evt_def456
+      - EVENTO_EVENT_IDS=${EVENTO_EVENT_IDS:-evt_zRt3yEMyk1zuud55}
       - AUTO_APPROVE_THRESHOLD=${AUTO_APPROVE_THRESHOLD:-1000}
     restart: unless-stopped
     networks:
