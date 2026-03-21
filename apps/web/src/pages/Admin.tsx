@@ -62,27 +62,7 @@ function EventsTab({}: EventsTabProps) {
     setHasNostr(typeof window !== "undefined" && !!window.nostr);
   }, []);
 
-  // Helper function to format ISO string to datetime-local format
-  const formatDateTimeLocal = (isoString: string) => {
-    const date = new Date(isoString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
-   const handleEditEvent = (item: any) => {
-     const event = item.event.event;
-     setTitle(event.basic_info.title);
-     setDescription(event.basic_info.description);
-     setStartDateTime(formatDateTimeLocal(event.datetime.start));
-     setEndDateTime(event.datetime.end ? formatDateTimeLocal(event.datetime.end) : "");
-     setLocation(event.location?.name || "");
-     setRsvpLink(event.registration?.url || "");
-     setEditingEventId(event.id); // CRITICAL: Store the original d tag!
-   };
+  // Event editing now handled on Evento directly
 
    const handleCancelEdit = () => {
      setEditingEventId(null);
@@ -379,23 +359,26 @@ function EventsTab({}: EventsTabProps) {
           {!isLoading && events.length === 0 && (
             <p className="text-slate-400 font-mono">No events published yet.</p>
           )}
-          {events.map((item) => (
-            <div key={item.event.event.id} className="flex justify-between items-center p-3 bg-slate-950 rounded border border-cyan-500/20">
+          {events.map((event) => (
+            <div key={event.id} className="flex justify-between items-center p-3 bg-slate-950 rounded border border-cyan-500/20">
               <div>
-                <p className="font-mono text-cyan-400">{item.event.event.basic_info.title}</p>
+                <p className="font-mono text-cyan-400">{event.title}</p>
                 <p className="text-sm text-slate-400">
-                  {new Date(item.event.event.datetime.start).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  {new Date(event.start_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </p>
-                {item.event.event.location?.name && (
-                  <p className="text-xs text-slate-500">{item.event.event.location.name}</p>
+                {event.location?.name && (
+                  <p className="text-xs text-slate-500">{event.location.name}</p>
                 )}
               </div>
-              <Button
-                onClick={() => handleEditEvent(item)}
-                className="bg-cyan-600 hover:bg-cyan-500 text-white"
+              <a
+                href={`https://evento.so/e/${event.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                Edit
-              </Button>
+                <Button className="bg-cyan-600 hover:bg-cyan-500 text-white">
+                  View
+                </Button>
+              </a>
             </div>
           ))}
         </div>

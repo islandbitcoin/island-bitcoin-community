@@ -1,81 +1,54 @@
 import { useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Event, EventWithDate } from "@/types/events";
+import type { EventoEmbedEvent } from "@/types/events";
 
-const API_BASE = import.meta.env.VITE_API_URL || "/api";
+const EMBED_BASE = "https://evento.so/api/embed/v1";
+const USERNAME = "islandbitcoin";
 
 export type EventFilter = "all" | "upcoming" | "past";
 
-async function fetchEvents(): Promise<Event[]> {
-  const response = await fetch(`${API_BASE}/events`);
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch events");
-  }
-
-  return response.json();
+/** Resolve cover image URLs — API returns relative paths like /eventos/uploaded-covers/... */
+function resolveCoverUrl(cover: string | null): string | null {
+  if (!cover) return null;
+  if (cover.startsWith("http")) return cover;
+  return `https://api.evento.so/storage/v1/render/image/public/cdn${cover}`;
 }
 
-function getNextOccurrence(event: Event): Date | null {
-  const startDate = new Date(event.event.datetime.start);
-  const now = new Date();
-
-  if (event.event.datetime.recurring?.enabled) {
-    const frequency = event.event.datetime.recurring.frequency;
-    let nextDate = new Date(startDate);
-
-    while (nextDate < now) {
-      switch (frequency) {
-        case "weekly":
-          nextDate.setDate(nextDate.getDate() + 7);
-          break;
-        case "biweekly":
-          nextDate.setDate(nextDate.getDate() + 14);
-          break;
-        case "monthly":
-          nextDate.setMonth(nextDate.getMonth() + 1);
-          break;
-        default:
-          return null;
-      }
-    }
-
-    const endDate = event.event.datetime.recurring.end_date
-      ? new Date(event.event.datetime.recurring.end_date)
-      : null;
-
-    if (endDate && nextDate > endDate) {
-      return null;
-    }
-
-    return nextDate;
-  }
-
-  return startDate > now ? startDate : null;
+function normalizeEvent(event: EventoEmbedEvent): EventoEmbedEvent {
+  return {
+    ...event,
+    cover: resolveCoverUrl(event.cover),
+  };
 }
 
-function processEvents(events: Event[], filter: EventFilter): EventWithDate[] {
-  const processed: EventWithDate[] = events.map((event) => ({
-    event,
-    nextDate: getNextOccurrence(event),
-  }));
+async function fetchEventoEvents(): Promise<EventoEmbedEvent[]> {
+  const res = await fetch(`${EMBED_BASE}/users/${USERNAME}/events?limit=100`);
+  if (!res.ok) throw new Error(`Evento API error: ${res.status}`);
+  const json = await res.json();
+  return (json.data ?? []).map(normalizeEvent);
+}
 
-  const filtered = processed.filter((item) => {
-    if (filter === "upcoming") return item.nextDate !== null;
-    if (filter === "past") return item.nextDate === null;
+function filterAndSort(
+  events: EventoEmbedEvent[],
+  filter: EventFilter
+): EventoEmbedEvent[] {
+  const filtered = events.filter((e) => {
+    if (filter === "upcoming") return e.status === "upcoming" || e.status === "ongoing";
+    if (filter === "past") return e.status === "past";
     return true;
   });
 
   return filtered.sort((a, b) => {
-    if (a.nextDate && b.nextDate) {
-      return a.nextDate.getTime() - b.nextDate.getTime();
-    }
-    if (a.nextDate && !b.nextDate) return -1;
-    if (!a.nextDate && b.nextDate) return 1;
+    // upcoming/ongoing before past
+    if (a.status !== "past" && b.status === "past") return -1;
+    if (a.status === "past" && b.status !== "past") return 1;
 
-    const aDate = new Date(a.event.event.datetime.start);
-    const bDate = new Date(b.event.event.datetime.start);
-    return bDate.getTime() - aDate.getTime();
+    const aDate = new Date(a.start_date).getTime();
+    const bDate = new Date(b.start_date).getTime();
+
+    // upcoming: soonest first; past: most recent first
+    if (a.status !== "past") return aDate - bDate;
+    return bDate - aDate;
   });
 }
 
@@ -87,16 +60,16 @@ export function useEvents(filter: EventFilter = "all") {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["events"],
-    queryFn: fetchEvents,
+    queryKey: ["evento-events"],
+    queryFn: fetchEventoEvents,
     staleTime: 5 * 60 * 1000,
     refetchInterval: 10 * 60 * 1000,
   });
 
-  const events = rawEvents ? processEvents(rawEvents, filter) : [];
+  const events = rawEvents ? filterAndSort(rawEvents, filter) : [];
 
   const refresh = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["events"] });
+    queryClient.invalidateQueries({ queryKey: ["evento-events"] });
   }, [queryClient]);
 
   return {
@@ -105,4 +78,53 @@ export function useEvents(filter: EventFilter = "all") {
     error: error as Error | null,
     refresh,
   };
+}
+
+// Helper functions for components
+export function formatEventDate(
+  startDate: string,
+  timezone?: string
+): string {
+  try {
+    return new Date(startDate).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      timeZone: timezone || undefined,
+    });
+  } catch {
+    return "Date TBD";
+  }
+}
+
+export function formatEventTime(
+  startDate: string,
+  endDate: string | null,
+  timezone?: string
+): string {
+  try {
+    const opts: Intl.DateTimeFormatOptions = {
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: timezone || undefined,
+    };
+    const start = new Date(startDate).toLocaleTimeString("en-US", opts);
+    if (!endDate) return start;
+    const end = new Date(endDate).toLocaleTimeString("en-US", opts);
+    return `${start} – ${end}`;
+  } catch {
+    return "";
+  }
+}
+
+export function formatLocation(
+  location: EventoEmbedEvent["location"]
+): string {
+  if (!location) return "Location TBD";
+  const parts = [location.name, location.city, location.country].filter(Boolean);
+  return parts.length > 0 ? parts.join(", ") : "Location TBD";
+}
+
+export function getEventoUrl(eventId: string): string {
+  return `https://evento.so/e/${eventId}`;
 }

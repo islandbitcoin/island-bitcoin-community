@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, Image, Menu, MapPin, X, ExternalLink } from "lucide-react";
 import Logo from "@/assets/logo.svg?react";
-import { useEvents } from "@/hooks/useEvents";
+import { useEvents, formatEventDate, formatLocation, getEventoUrl } from "@/hooks/useEvents";
 import { useGallery } from "@/hooks/useGallery";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { Button } from "@/components/ui/button";
@@ -115,40 +115,37 @@ export default function Index() {
                   previewEvents.length >= 3 && "grid grid-cols-1 md:grid-cols-3 max-w-6xl",
                 )}
               >
-                {previewEvents.map((item) => {
-                  const event = item.event.event;
-                  const location = event.location;
-                  const locationString = location?.address ? `${location.address.city}, ${location.address.country}` : location?.name || "Caribbean";
-
-                  return (
-                    <div key={event.id} className="bg-card border border-border rounded-lg p-6 hover:shadow-lg hover:border-primary/30 transition-all">
-                      <h3 className="text-lg font-semibold text-primary mb-2 line-clamp-2">{event.basic_info.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(event.datetime.start).toLocaleDateString("en-US", {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </p>
-                      <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {locationString}
-                      </p>
-                      {event.registration?.url && (
-                        <a
-                          href={event.registration.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-                        >
-                          RSVP
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
+                {previewEvents.map((event) => (
+                    <div key={event.id} className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all">
+                      {event.cover && (
+                        <div className="w-full h-36 overflow-hidden">
+                          <img src={event.cover} alt={event.title} className="w-full h-full object-cover" loading="lazy" />
+                        </div>
                       )}
+                      <div className="p-6">
+                        <h3 className="text-lg font-semibold text-primary mb-2 line-clamp-2">{event.title}</h3>
+                        <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {formatEventDate(event.start_date, event.timezone)}
+                        </p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {formatLocation(event.location)}
+                        </p>
+                        {event.status !== "past" && (
+                          <a
+                            href={getEventoUrl(event.id)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                          >
+                            RSVP
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
                     </div>
-                  );
-                })}
+                  ))}
               </div>
             )}
 
