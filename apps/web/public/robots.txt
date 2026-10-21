@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin-setup
+Disallow: /settings
+Disallow: /setup
+Disallow: /health
+
+Sitemap: https://community.islandbitcoin.com/sitemap.xml

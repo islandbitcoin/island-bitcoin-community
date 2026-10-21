@@ -6,10 +6,11 @@
     
     <title>Island Bitcoin Community</title>
     <meta name="description" content="Join the Island Bitcoin community. Play games, earn sats, and learn about Bitcoin in the Caribbean." />
-    <meta name="keywords" content="Bitcoin,Caribbean,Lightning Network,Community,Island Bitcoin" />
+    <link rel="canonical" href="https://community.islandbitcoin.com/" />
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
     
     <!-- Open Graph -->
     <meta property="og:title" content="Island Bitcoin Community" />
@@ -20,16 +21,38 @@
     <meta property="og:image" content="https://islandbitcoin.com/opengraph-image" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Island Bitcoin Community" />
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Island Bitcoin Community" />
     <meta name="twitter:description" content="Join the Island Bitcoin community. Play games, earn sats, and learn about Bitcoin in the Caribbean." />
     <meta name="twitter:image" content="https://islandbitcoin.com/twitter-image" />
-    <meta name="twitter:creator" content="@isaboricua" />
+    <meta name="twitter:image:alt" content="Island Bitcoin Community" />
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Static shell: visible to crawlers and no-JS visitors; React replaces #root on mount. -->
+    <div id="root">
+      <main style="min-height:100vh;background:#f7e7ce;color:#1a1a1a;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;text-align:center;padding:2rem;">
+        <div style="max-width:36rem;">
+          <h1 style="font-size:1.75rem;margin-bottom:1rem;">Island Bitcoin Community</h1>
+          <p style="line-height:1.6;opacity:0.75;">
+            Events, gallery, games with Lightning rewards, and practical Bitcoin
+            education in Jamaica and the Caribbean. Find a meetup and join us.
+          </p>
+          <p style="margin-top:1.5rem;opacity:0.75;font-size:0.9rem;">
+            <a style="color:#FF6B35;" href="https://islandbitcoin.com">islandbitcoin.com</a> ·
+            <a style="color:#FF6B35;" href="https://onelovebitcoin.com">One Love Bitcoin</a>
+          </p>
+          <p style="margin-top:2.5rem;opacity:0.45;font-size:0.8rem;">Loading the app…</p>
+        </div>
+      </main>
+    </div>
+    <noscript>
+      <p style="position:fixed;bottom:0;left:0;right:0;background:#1a1a1a;color:#fff;padding:1rem;text-align:center;font-family:system-ui,sans-serif;">
+        This community app needs JavaScript to run. Visit <a style="color:#FF6B35;" href="https://islandbitcoin.com">islandbitcoin.com</a> for an overview of everything Island Bitcoin does.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

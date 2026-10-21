@@ -1,4 +1,5 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 
 import Index from "./pages/Index";
 import About from "./pages/About";
@@ -11,9 +12,25 @@ import Setup from "./pages/Setup";
 import Health from "./pages/Health";
 import NotFound from "./pages/NotFound";
 
+const PAGE_TITLES: Record<string, string> = {
+  "/": "Island Bitcoin Community",
+  "/about": "About · Island Bitcoin Community",
+  "/events": "Events · Island Bitcoin Community",
+  "/gallery": "Gallery · Island Bitcoin Community",
+};
+
+function PageTitle() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    document.title = PAGE_TITLES[pathname] ?? "Island Bitcoin Community";
+  }, [pathname]);
+  return null;
+}
+
 export function AppRouter() {
   return (
     <BrowserRouter>
+      <PageTitle />
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/about" element={<About />} />

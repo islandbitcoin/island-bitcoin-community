@@ -16,7 +16,7 @@
   "dependencies": {
     "@island-bitcoin/nostr": "workspace:*",
     "@island-bitcoin/shared": "workspace:*",
-    "@nostrify/nostrify": "^0.49.2",
+    "@nostrify/nostrify": "^0.50.5",
     "@nostrify/react": "^0.2.24",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-label": "^2.1.8",

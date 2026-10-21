@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, Image, Menu, MapPin, X, ExternalLink } from "lucide-react";
 import Logo from "@/assets/logo.svg?react";
@@ -13,11 +13,29 @@ import { UserProfile } from "@/components/auth/UserProfile";
 import { BitcoinTrivia } from "@/components/games/BitcoinTrivia";
 import { Leaderboard } from "@/components/games/Leaderboard";
 import { NostrFeed } from "@/components/social/NostrFeed";
+import { NextEventCountdown } from "@/components/home/NextEventCountdown";
+import { TriviaPulse } from "@/components/home/TriviaPulse";
 import { cn } from "@/lib/utils";
 
 const SITE_NAME = "Island Bitcoin";
 const SITE_TAGLINE = "Bitcoiners in Paradise";
 const SITE_DESCRIPTION = "Join the Caribbean's most vibrant Bitcoin community. Learn, play, and connect with fellow Bitcoiners.";
+
+/** Pauses ambient video for users who prefer reduced motion. */
+function useSafeAutoplayVideo(ref: React.RefObject<HTMLVideoElement | null>) {
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => {
+      if (mq.matches) video.pause();
+      else video.play().catch(() => {});
+    };
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, [ref]);
+}
 
 export default function Index() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -30,10 +48,23 @@ export default function Index() {
     return shuffled.slice(0, 6);
   }, [images]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const footerVideoRef = useRef<HTMLVideoElement>(null);
+  useSafeAutoplayVideo(heroVideoRef);
+  useSafeAutoplayVideo(footerVideoRef);
 
   return (
     <Layout hideHeader hideFooter>
-      <div className="min-h-screen bg-gradient-to-b from-muted via-background to-muted/30">
+      {/* Fixed sand-blur backdrop: the whole page gets a whisper of beach; cards stay clean on top. */}
+      <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none">
+        <img
+          src="/hero-beach-poster.jpg"
+          alt=""
+          className="h-full w-full object-cover blur-3xl scale-110 opacity-20"
+        />
+        <div className="absolute inset-0 bg-background/70" />
+      </div>
+      <div className="relative z-10 min-h-screen">
         <header role="banner" className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border">
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
@@ -62,12 +93,42 @@ export default function Index() {
         </header>
 
         <section className="relative overflow-hidden py-16 sm:py-20 lg:py-32">
-          <div className="absolute inset-0 -z-10">
+          {/* Calm Caribbean shoreline behind the hero. Mixkit #5016, free license, no attribution required. */}
+          <video
+            ref={heroVideoRef}
+            className="absolute inset-0 h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster="/hero-beach-poster.jpg"
+            aria-hidden="true"
+            tabIndex={-1}
+          >
+            <source src="/hero-beach.mp4" type="video/mp4" />
+          </video>
+          {/* Readability scrim over the video; blobs tint on top */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/55 to-background/80" />
+          <div className="absolute inset-0">
             <div className="absolute top-20 left-10 w-48 sm:w-72 h-48 sm:h-72 bg-primary/20 rounded-full blur-3xl" />
             <div className="absolute bottom-10 right-10 w-64 sm:w-96 h-64 sm:h-96 bg-accent/20 rounded-full blur-3xl" />
           </div>
 
-          <div className="container mx-auto px-4">
+          {/* Wave seam: the shoreline hands off to the content below */}
+          <svg
+            viewBox="0 0 1440 80"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+            className="absolute bottom-0 left-0 w-full h-14 text-background"
+          >
+            <path
+              fill="currentColor"
+              d="M0,52 C220,86 460,20 720,40 C980,60 1220,82 1440,44 L1440,80 L0,80 Z"
+            />
+          </svg>
+
+          <div className="container relative mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
                 {SITE_TAGLINE}
@@ -89,6 +150,8 @@ export default function Index() {
                   View Events
                 </Button>
               </div>
+
+              <NextEventCountdown />
             </div>
           </div>
         </section>
@@ -162,6 +225,8 @@ export default function Index() {
             </div>
           </div>
         </section>
+
+        <TriviaPulse />
 
         <section className="py-12 sm:py-16 bg-card/50">
           <div className="container mx-auto px-4">
@@ -244,9 +309,33 @@ export default function Index() {
           </section>
         )}
 
-        <footer role="contentinfo" className="py-8 sm:py-12 bg-muted/50 border-t border-border">
-          <div className="container mx-auto px-4">
-            <p className="text-sm text-muted-foreground text-center">
+        <footer role="contentinfo" className="relative overflow-hidden border-t border-border/40">
+          <video
+            ref={footerVideoRef}
+            className="absolute inset-0 h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster="/hero-beach-poster.jpg"
+            aria-hidden="true"
+            tabIndex={-1}
+          >
+            <source src="/hero-beach.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="relative container mx-auto px-4 py-20 sm:py-24 text-center">
+            <p className="text-2xl sm:text-4xl font-bold text-white mb-3">See you on the beach.</p>
+            <p className="text-white/70 text-sm sm:text-base mb-8 max-w-md mx-auto">
+              Meetups, workshops, and celebrations — across the islands, all year round.
+            </p>
+            <Link to="/events">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8">
+                Find the next meetup
+              </Button>
+            </Link>
+            <p className=" text-sm text-white/50 mt-10">
               &copy; {new Date().getFullYear()} {SITE_NAME}
             </p>
           </div>
