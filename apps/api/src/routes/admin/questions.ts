@@ -50,7 +50,9 @@ questionsAdminRoute.put(
   requireAdmin,
   zValidator('json', updateQuestionSchema),
   async (c) => {
-    const id = parseInt(c.req.param('id'), 10);
+    const idParam = c.req.param('id');
+    if (!idParam) return c.json({ error: 'Invalid ID' }, 400);
+    const id = parseInt(idParam, 10);
     if (isNaN(id)) return c.json({ error: 'Invalid ID' }, 400);
 
     const existing = await db.select().from(questions).where(eq(questions.id, id)).get();
@@ -67,7 +69,9 @@ questionsAdminRoute.delete(
   requireAuth,
   requireAdmin,
   async (c) => {
-    const id = parseInt(c.req.param('id'), 10);
+    const idParam = c.req.param('id');
+    if (!idParam) return c.json({ error: 'Invalid ID' }, 400);
+    const id = parseInt(idParam, 10);
     if (isNaN(id)) return c.json({ error: 'Invalid ID' }, 400);
 
     const existing = await db.select().from(questions).where(eq(questions.id, id)).get();

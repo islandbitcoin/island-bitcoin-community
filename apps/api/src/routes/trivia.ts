@@ -428,6 +428,7 @@ triviaRoute.get(
   async (c) => {
     const pubkey = c.get('pubkey');
     const sessionId = c.req.param('id');
+    if (!sessionId) return c.json({ error: 'Invalid session ID' }, 400);
 
     const session = await db.query.triviaSessions.findFirst({
       where: (ts, { eq, and }) => and(eq(ts.id, sessionId), eq(ts.userId, pubkey)),
