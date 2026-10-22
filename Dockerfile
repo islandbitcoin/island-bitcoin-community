@@ -4,7 +4,7 @@
 # =============================================================================
 # Stage 1: Dependencies
 # =============================================================================
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 
 # Install build tools for native modules (better-sqlite3)
 RUN apk add --no-cache python3 make g++
@@ -32,7 +32,7 @@ RUN pnpm install --frozen-lockfile && \
 # =============================================================================
 # Stage 2: Builder
 # =============================================================================
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Install pnpm
 RUN corepack enable pnpm
@@ -55,7 +55,7 @@ RUN pnpm build
 # =============================================================================
 # Stage 3: API Runtime (uses tsx to run TypeScript directly)
 # =============================================================================
-FROM node:20-alpine AS api
+FROM node:22-alpine AS api
 
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
