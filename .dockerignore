@@ -27,3 +27,5 @@ Dockerfile
 docker-compose*.yml
 .dockerignore
 .sisyphus
+.pnpm-store
+**/.pnpm-store
